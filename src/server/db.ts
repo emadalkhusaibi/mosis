@@ -3,7 +3,10 @@ import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-const path = resolve(/*turbopackIgnore: true*/ process.env.DATABASE_PATH ?? "./data/moasis.db");
+// Vercel's filesystem is read-only except /tmp, so the database lives there (and resets
+// when the function instance is recycled) until a hosted database replaces SQLite.
+const fallback = process.env.VERCEL ? "/tmp/moasis.db" : "./data/moasis.db";
+const path = resolve(/*turbopackIgnore: true*/ process.env.DATABASE_PATH ?? fallback);
 
 const globalForDb = globalThis as unknown as { moasisDb?: Database.Database };
 
