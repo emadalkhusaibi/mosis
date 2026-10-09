@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
+import { accent } from "./accent";
 
 /** Matte content plane. Use for reading surfaces; glass is reserved for chrome and overlays. */
 export function Panel({ className, padded = true, as: Tag = "section", ...rest }: HTMLAttributes<HTMLElement> & { padded?: boolean; as?: "section" | "div" | "article" | "aside" }) {
@@ -24,7 +25,7 @@ export function PageHeader({ eyebrow, title, description, action }: { eyebrow?: 
     <header className="page-header">
       <div className="min-w-0">
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-        <h1 className="page-title">{title}</h1>
+        <h1 className="page-title">{accent(title)}</h1>
         {description && <p className="page-description">{description}</p>}
       </div>
       {action && <div className="page-action">{action}</div>}

@@ -11,6 +11,9 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { ProgressRing } from "@/components/ui/progress";
 import { Origin } from "@/components/ui/origin";
+import { Tilt } from "@/components/ui/tilt";
+import { Morph } from "@/components/ui/morph";
+import { Origin3D } from "@/components/three/origin-3d";
 import { CashChart } from "@/components/charts/cash-chart";
 import { sectorOf } from "@/content/sectors";
 import { sections } from "@/content/sections";
@@ -61,7 +64,7 @@ export default function TodayPage() {
     <div className="today">
       <header className="today-head">
         <p className="eyebrow">{t("Your founder space", "مساحتك كمؤسس")}</p>
-        <h1 className="page-title">{greeting(t)}{firstName ? `, ${firstName}` : ""}.</h1>
+        <h1 className="page-title">{greeting(t)}{firstName ? <>, <em className="accent">{firstName}</em></> : ""}.</h1>
         <p className="page-description">{t("One considered decision at a time.", "قرار مدروس في كل مرة.")}</p>
       </header>
 
@@ -95,11 +98,11 @@ export default function TodayPage() {
       <div className="grid-dash">
         <Panel className="span-12 md-span-5 tile-wallet">
           <PanelHeader title={t("Practice wallet", "المحفظة التدريبية")} action={<Link className="tile-link" href="/wallet">{t("Open", "فتح")}<ArrowRight size={14} className="flip-rtl" /></Link>} />
-          <div className="mini-card">
+          <Morph name="wallet-capital"><Tilt className="mini-card" max={8}>
             <div className="mini-card-top"><span>moasis</span><Origin className="h-5 w-5" /></div>
             <span className="mini-card-label">{t("Available to spend", "المتاح للإنفاق")}</span>
             <Money value={available(s)} className="mini-card-amount" animate />
-          </div>
+          </Tilt></Morph>
           <div className="tile-stats">
             <div><span className="stat-label">{t("Reserve", "الاحتياطي")}</span><Money value={s.reserve} className="tile-stat" /></div>
             <div><span className="stat-label">{t("Activity", "الحركات")}</span><span className="tile-stat num">{s.entries.length}</span></div>
@@ -138,7 +141,7 @@ export default function TodayPage() {
         <Panel className="span-12 md-span-4 tile-level">
           <PanelHeader title={t("Founder level", "مستوى المؤسس")} />
           <div className="level-body">
-            <Origin className="level-mark" />
+            <Origin3D className="level-3d" />
             <strong className="level-rank">{ranks[lv.index][lang === "ar" ? 1 : 0]}</strong>
             <span className="muted small num">{lv.xp} XP{lv.next ? t(` · ${lv.toNext} to next level`, ` · ${lv.toNext} للمستوى التالي`) : ""}</span>
           </div>

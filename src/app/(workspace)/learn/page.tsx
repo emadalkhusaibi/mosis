@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import Image from "next/image";
 import { ArrowRight, Check, Clock } from "@phosphor-icons/react";
 import clsx from "clsx";
@@ -22,7 +23,7 @@ export default function LearnPage() {
     <>
       <PageHeader
         eyebrow={t("Learning studio", "استوديو التعلّم")}
-        title={t("Learn what the next decision needs.", "تعلّم ما يحتاجه قرارك التالي.")}
+        title={t("Learn what the *next* decision needs.", "تعلّم ما يحتاجه قرارك *التالي*.")}
         description={t("Twelve short lessons across money, customers and leadership. Each ends with a check and an exercise for your own business.", "اثنا عشر درساً قصيراً في المال والعملاء والقيادة. ينتهي كل درس باختبار وتمرين لمشروعك.")}
       />
       <Panel className="learn-summary">
@@ -52,7 +53,7 @@ export default function LearnPage() {
                 <li key={l.id}>
                   <Link href={`/learn/${l.id}`} className={clsx("lesson-card panel", done.has(l.id) && "is-done")}>
                     <span className="lesson-index num">{done.has(l.id) ? <Check size={14} weight="bold" /> : i + 1}</span>
-                    <span className="lesson-title">{p(l.title)}</span>
+                    <span className="lesson-title"><Morph name={`lesson-${l.id}`} kind="morph-text"><span className="vt-text">{p(l.title)}</span></Morph></span>
                     <span className="lesson-meta"><Clock size={14} />{t(`${l.minutes} min`, `${l.minutes} دقائق`)}</span>
                   </Link>
                 </li>

@@ -45,9 +45,15 @@
   --clay-100: #f5e3e0;
 
   /* Type */
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Geist Variable", "Segoe UI", system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Geist Variable", "Segoe UI", system-ui, sans-serif;
-  --font-arabic: "SF Arabic", "Geeza Pro", "Noto Sans Arabic Variable", "Segoe UI", system-ui, sans-serif;
+  /* Brand typefaces ship with the app so every device sees the same voice.
+     Geist carries Latin; Readex Pro carries Arabic (and catches any Arabic glyph
+     inside Latin text through per-glyph fallback). Instrument Serif italic is the
+     single editorial accent, used for one or two words per headline at most. */
+  --font-ui: "Geist Variable", "Readex Pro Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-display: "Geist Variable", "Readex Pro Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-arabic: "Readex Pro Variable", "Geist Variable", "SF Arabic", "Geeza Pro", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
 
   --t-caption: 0.75rem;   /* 12 */
   --t-footnote: 0.8125rem;/* 13 */

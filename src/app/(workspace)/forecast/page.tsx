@@ -45,7 +45,7 @@ export default function ForecastPage() {
     <>
       <PageHeader
         eyebrow={t("Forecast", "التوقعات")}
-        title={t("See the year before you live it.", "شاهد السنة قبل أن تعيشها.")}
+        title={t("See the year *before* you live it.", "شاهد السنة *قبل* أن تعيشها.")}
         description={t("A forward plan built from your assumptions. It never changes your wallet.", "خطة مستقبلية مبنية على افتراضاتك. لا تغيّر محفظتك أبداً.")}
         action={<Button variant="secondary" icon={<ArrowCounterClockwise size={18} />} onClick={resetToSector}>{t("Sector defaults", "افتراضات القطاع")}</Button>}
       />

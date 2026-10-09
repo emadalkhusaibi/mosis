@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -60,7 +61,7 @@ function Scenario({ id }: { id: string }) {
       <header className="page-header">
         <div className="min-w-0">
           <p className="eyebrow">{state.venture.name} · {p(sector.name)}</p>
-          <h1 className="page-title">{p(sc.title)}</h1>
+          <h1 className="page-title"><Morph name={`scenario-${sc.id}`} kind="morph-text"><span className="vt-text">{p(sc.title)}</span></Morph></h1>
           <p className="page-description">{p(sc.intro)}</p>
         </div>
       </header>

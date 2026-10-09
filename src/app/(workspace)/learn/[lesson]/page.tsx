@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
@@ -56,7 +57,7 @@ function Lesson({ id }: { id: string }) {
         <div className="lesson-hero-art"><Image src={pathImages[l.path]} alt="" fill sizes="(min-width: 900px) 40vw, 100vw" priority /></div>
         <div className="lesson-hero-copy">
           <p className="eyebrow">{p(paths[l.path])}</p>
-          <h1 className="page-title">{p(l.title)}</h1>
+          <h1 className="page-title"><Morph name={`lesson-${l.id}`} kind="morph-text"><span className="vt-text">{p(l.title)}</span></Morph></h1>
           <p className="lesson-meta"><Clock size={15} />{t(`${l.minutes} minute read`, `قراءة ${l.minutes} دقائق`)}{completed && <span className="chip chip-positive"><Check size={12} weight="bold" />{t("Completed", "مكتمل")}</span>}</p>
         </div>
       </header>

@@ -3,6 +3,8 @@ import { motion, type PanInfo } from "motion/react";
 import { useRef, type KeyboardEvent } from "react";
 import clsx from "clsx";
 import { Origin } from "@/components/ui/origin";
+import { Tilt } from "@/components/ui/tilt";
+import { Morph } from "@/components/ui/morph";
 import { Money } from "@/components/ui/money";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
@@ -56,7 +58,7 @@ export function CardStack({ active, onChange, onOpen }: { active: CardId; onChan
               id={`card-${id}`}
               role="option"
               aria-selected={id === active}
-              className={clsx("wcard", `wcard-${id}`, depth === 0 && "is-front")}
+              className={clsx("wcard-slot", depth === 0 && "is-front")}
               style={{ zIndex: 10 - depth }}
               initial={false}
               animate={{ y: depth === 0 ? 0 : -depth * 40, scale: 1 - depth * 0.045, opacity: depth === 2 ? 0.85 : 1 }}
@@ -68,7 +70,13 @@ export function CardStack({ active, onChange, onOpen }: { active: CardId; onChan
               whileTap={depth === 0 ? { scale: 0.985 } : undefined}
               onClick={() => (depth === 0 ? onOpen?.(id) : onChange(id))}
             >
-              <CardFace id={id} />
+              {id === "capital" ? (
+                <Morph name="wallet-capital">
+                  <Tilt className={clsx("wcard", `wcard-${id}`, depth === 0 && "is-front")} max={depth === 0 ? 9 : 0} glare={depth === 0}><CardFace id={id} /></Tilt>
+                </Morph>
+              ) : (
+                <Tilt className={clsx("wcard", `wcard-${id}`, depth === 0 && "is-front")} max={depth === 0 ? 9 : 0} glare={depth === 0}><CardFace id={id} /></Tilt>
+              )}
             </motion.div>
           );
         })}

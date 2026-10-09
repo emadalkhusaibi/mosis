@@ -11,6 +11,7 @@ import { Money } from "@/components/ui/money";
 import { Sheet } from "@/components/ui/sheet";
 import { Field, Input, MoneyInput } from "@/components/ui/field";
 import { Origin } from "@/components/ui/origin";
+import { accent } from "@/components/ui/accent";
 import { available, newId } from "@/domain/state";
 import { toBaisa, type Baisa } from "@/lib/money";
 
@@ -48,7 +49,7 @@ export default function TeamPage() {
       <header className="page-header">
         <div className="min-w-0">
           <p className="eyebrow">{t("Practice team", "الفريق التدريبي")}</p>
-          <h1 className="page-title">{t("Design the team before you hire it.", "صمّم الفريق قبل أن توظّفه.")}</h1>
+          <h1 className="page-title">{accent(t("Design the team *before* you hire it.", "صمّم الفريق *قبل* أن توظّفه."))}</h1>
           <p className="page-description">{t("Fictional roles only. Adding one records a month of salary and raises your forecast's fixed costs. No real employment is created.", "أدوار افتراضية فقط. إضافة دور تسجّل راتب شهر وترفع التكاليف الثابتة في التوقعات. لا يُنشأ توظيف حقيقي.")}</p>
         </div>
         <div className="page-action"><Button icon={<Plus size={18} weight="bold" />} onClick={() => setAdding(true)}>{t("Add role", "إضافة دور")}</Button></div>

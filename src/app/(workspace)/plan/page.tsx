@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import { ArrowRight, Check, FileText } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
@@ -21,7 +22,7 @@ export default function PlanPage() {
     <>
       <PageHeader
         eyebrow={t("Business plan", "خطة العمل")}
-        title={t("Write the plan you'd defend.", "اكتب خطة تستطيع الدفاع عنها.")}
+        title={t("Write the plan you'd *defend*.", "اكتب خطة تستطيع *الدفاع* عنها.")}
         description={t("Seven chapters, one question at a time. Separate what you know from what you're assuming.", "سبعة فصول، سؤال تلو الآخر. افصل ما تعرفه عمّا تفترضه.")}
         action={<Button variant="secondary" href="/plan/document" icon={<FileText size={18} />}>{t("View full plan", "عرض الخطة كاملة")}</Button>}
       />
@@ -41,10 +42,10 @@ export default function PlanPage() {
             <li key={sec.id}>
               <Link href={`/plan/${sec.id}`} className={clsx("chapter panel", st.complete && "is-done")}>
                 <div className="chapter-top">
-                  <span className="chapter-icon"><m.icon size={22} /></span>
+                  <Morph name={`chapter-icon-${sec.id}`}><span className="chapter-icon"><m.icon size={22} /></span></Morph>
                   <span className="chapter-num num">{String(i + 1).padStart(2, "0")}</span>
                 </div>
-                <h2 className="chapter-title">{p(sec.name)}</h2>
+                <h2 className="chapter-title"><Morph name={`chapter-${sec.id}`} kind="morph-text"><span className="vt-text">{p(sec.name)}</span></Morph></h2>
                 <p className="chapter-intro">{p(sec.intro)}</p>
                 <div className="chapter-foot">
                   <ProgressBar value={st.done / st.total} label={p(sec.name)} tone={st.complete ? "positive" : "ink"} />

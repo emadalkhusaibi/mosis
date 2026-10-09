@@ -57,7 +57,7 @@ export default function ConsultantPage() {
     <>
       <PageHeader
         eyebrow={t("Consultant desk", "مكتب المستشار")}
-        title={t("Guide founders with structure.", "أرشد المؤسسين بمنهجية.")}
+        title={t("Guide founders with *structure*.", "أرشد المؤسسين *بمنهجية*.")}
         description={t("Keep client notes, score evidence, economics and operations, and plan sessions.", "احتفظ بملاحظات العملاء، وقيّم الأدلة والاقتصاديات والتشغيل، وخطط للجلسات.")}
         action={<Button icon={<Plus size={18} weight="bold" />} onClick={() => setEditing(blank())}>{t("New client", "عميل جديد")}</Button>}
       />

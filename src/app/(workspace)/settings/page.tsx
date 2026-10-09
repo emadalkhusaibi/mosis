@@ -46,7 +46,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeader eyebrow={t("Settings", "الإعدادات")} title={t("Your workspace", "مساحة عملك")} />
+      <PageHeader eyebrow={t("Settings", "الإعدادات")} title={t("Your *workspace*", "مساحة *عملك*")} />
       <div className="settings">
         <Panel>
           <PanelHeader title={t("Account", "الحساب")} />

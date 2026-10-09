@@ -1,3 +1,4 @@
+import "lenis/dist/lenis.css";
 import type { Metadata } from "next";
 import { Welcome } from "@/components/welcome/welcome";
 

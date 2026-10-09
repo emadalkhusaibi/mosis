@@ -88,3 +88,7 @@
     radial-gradient(90% 70% at -10% 110%, rgb(124 135 146 / 0.08), transparent 60%),
     var(--canvas);
 }
+
+/* Editorial accent: one serif italic word per headline (Latin), lighter titanium weight (Arabic). */
+.accent { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: inherit; padding-inline-end: 0.04em; }
+:lang(ar) .accent { font-family: var(--font-arabic); font-style: normal; font-weight: 300; color: var(--ink-3); letter-spacing: 0; padding: 0; }

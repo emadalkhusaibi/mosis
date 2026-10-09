@@ -1,17 +1,14 @@
-"use client";
-import { motion, useReducedMotion } from "motion/react";
+import { ViewTransition } from "react";
 
-/** Each navigation settles in: a short rise and focus pull, never a slide that hides content. */
+/**
+ * Route changes cross-dissolve with a slight depth shift (old recedes, new rises),
+ * while shared elements (chapter, lesson, scenario, wallet card) morph between pages.
+ * Templates remount per navigation, so enter/exit fire here; chrome stays anchored.
+ */
 export default function WorkspaceTemplate({ children }: { children: React.ReactNode }) {
-  const reduce = useReducedMotion();
   return (
-    <motion.div
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14, filter: "blur(6px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none" } }}
-      transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9, opacity: { duration: 0.28 }, filter: { duration: 0.32 } }}
-      className="page-enter"
-    >
-      {children}
-    </motion.div>
+    <ViewTransition enter="page-in" exit="page-out" default="none">
+      <div className="page-root">{children}</div>
+    </ViewTransition>
   );
 }

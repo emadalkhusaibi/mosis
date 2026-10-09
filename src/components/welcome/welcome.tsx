@@ -5,7 +5,10 @@ import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, us
 import { ArrowRight, ChartLineUp, Check, Exam, LockSimple, NotePencil, Translate, Wallet } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
-import { AnimatedOrigin } from "@/components/ui/origin-animated";
+import { Origin3D } from "@/components/three/origin-3d";
+import { Tilt } from "@/components/ui/tilt";
+import { SmoothScroll } from "@/components/ui/smooth-scroll";
+import { accent } from "@/components/ui/accent";
 import { Origin, Wordmark } from "@/components/ui/origin";
 import { Money } from "@/components/ui/money";
 import { ProgressRing } from "@/components/ui/progress";
@@ -27,6 +30,7 @@ export function Welcome() {
 
   return (
     <div className="welcome">
+      <SmoothScroll />
       <header className="w-nav glass">
         <Link href="/welcome" aria-label="Moasis"><Wordmark /></Link>
         <nav className="w-nav-actions">
@@ -39,6 +43,7 @@ export function Welcome() {
       </header>
 
       <Hero primary={primary} />
+      <WalletShowcase />
       <Story />
       <Bilingual />
       <Principles />
@@ -58,17 +63,21 @@ function Words({ text, delay = 0, className }: { text: string; delay?: number; c
   const reduce = useReducedMotion();
   return (
     <span className={className}>
-      {text.split(" ").map((word, i) => (
-        <motion.span
-          key={`${word}-${i}`}
-          className="w-word"
-          initial={reduce ? false : { opacity: 0, y: "0.45em", filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.9, ease, delay: delay + i * 0.06 }}
-        >
-          {word}{" "}
-        </motion.span>
-      ))}
+      {text.split(" ").map((raw, i) => {
+        const accented = raw.startsWith("*");
+        const word = raw.replace(/\*/g, "");
+        return (
+          <motion.span
+            key={`${word}-${i}`}
+            className={clsx("w-word", accented && "accent")}
+            initial={reduce ? false : { opacity: 0, y: "0.5em", filter: "blur(12px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1, ease, delay: delay + i * 0.07 }}
+          >
+            {word}{" "}
+          </motion.span>
+        );
+      })}
     </span>
   );
 }
@@ -77,60 +86,116 @@ function Hero({ primary }: { primary: { href: string; label: string } }) {
   const { t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 });
-  const copyY = useTransform(progress, [0, 1], [0, -80]);
-  const copyOpacity = useTransform(progress, [0, 0.6], [1, 0]);
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.5 });
+  const copyOpacity = useTransform(progress, [0, 0.32], [1, 0]);
+  const copyY = useTransform(progress, [0, 0.4], [0, -70]);
+  const copyBlur = useTransform(progress, [0, 0.32], ["blur(0px)", "blur(10px)"]);
+  const stageScale = useTransform(progress, [0, 0.6], [1, 1.25]);
+  const stageY = useTransform(progress, [0, 0.6], ["0vh", "-34vh"]);
+  const haloOpacity = useTransform(progress, [0, 0.5], [0.9, 0.35]);
 
   return (
     <section ref={ref} className="w-hero">
-      <motion.div className="w-hero-copy" style={{ y: copyY, opacity: copyOpacity }}>
-        <AnimatedOrigin className="w-hero-mark" delay={0.1} />
-        <motion.p className="w-eyebrow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35, duration: 0.6 }}>
-          {t("The founder practice studio · Oman", "استوديو تدريب المؤسسين · عُمان")}
-        </motion.p>
-        <h1 className="w-title">
-          <Words text={t("Practise the business", "تدرّب على مشروعك")} delay={0.45} />
-          <br />
-          <Words text={t("before you risk the money.", "قبل أن تخاطر بمالك.")} delay={0.7} className="w-title-soft" />
-        </h1>
-        <motion.p className="w-lede" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.8, ease }}>
-          {t("Plan it, fund it with practice capital, forecast the year and make the hard calls. All in one calm workspace, in Arabic and English.", "خطّط له، وموّله برأس مال تدريبي، وتوقّع سنته، واتخذ القرارات الصعبة. كل ذلك في مساحة عمل هادئة واحدة، بالعربية والإنجليزية.")}
-        </motion.p>
-        <motion.div className="w-ctas" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.25, duration: 0.8, ease }}>
-          <Link href={primary.href} className="btn btn-primary btn-lg">{primary.label}<ArrowRight size={18} className="flip-rtl" /></Link>
-          <Link href="/sign-up" className="btn btn-secondary btn-lg">{t("Create a free account", "أنشئ حساباً مجانياً")}</Link>
+      <div className="w-hero-sticky">
+        <motion.div className="w-hero-copy" style={{ opacity: copyOpacity, y: copyY, filter: copyBlur }}>
+          <motion.p className="w-eyebrow" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8, ease }}>
+            {t("The founder practice studio · Oman", "استوديو تدريب المؤسسين · عُمان")}
+          </motion.p>
+          <h1 className="w-title">
+            <Words text={t("Practise the business", "تدرّب على مشروعك")} delay={0.3} />
+            <br />
+            <Words text={t("*before* you risk the money.", "*قبل* أن تخاطر بمالك.")} delay={0.55} className="w-title-soft" />
+          </h1>
+          <motion.p className="w-lede" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.9, ease }}>
+            {t("Plan it, fund it with practice capital, forecast the year and make the hard calls. One calm workspace, in Arabic and English.", "خطّط له، وموّله برأس مال تدريبي، وتوقّع سنته، واتخذ القرارات الصعبة. مساحة عمل هادئة واحدة، بالعربية والإنجليزية.")}
+          </motion.p>
+          <motion.div className="w-ctas" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.15, duration: 0.9, ease }}>
+            <Magnetic><Link href={primary.href} className="btn btn-primary btn-lg">{primary.label}<ArrowRight size={18} className="flip-rtl" /></Link></Magnetic>
+            <Link href="/sign-up" className="btn btn-glass btn-lg">{t("Create a free account", "أنشئ حساباً مجانياً")}</Link>
+          </motion.div>
         </motion.div>
-      </motion.div>
-      <HeroCards progress={progress} />
+        <motion.div className="w-hero-stage" style={{ scale: stageScale, y: stageY }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 1.4, ease }}>
+          <motion.span className="w-halo" style={{ opacity: haloOpacity }} aria-hidden="true" />
+          <Origin3D scroll={progress} className="w-origin-3d" />
+        </motion.div>
+        <motion.p className="w-scroll-cue" style={{ opacity: copyOpacity }} aria-hidden="true"><span />{t("Scroll", "مرّر")}</motion.p>
+      </div>
     </section>
   );
 }
 
-function HeroCards({ progress }: { progress: MotionValue<number> }) {
-  const { t } = useI18n();
-  const spread = useTransform(progress, [0, 0.7], [0, 1]);
-  const lift = useTransform(progress, [0, 1], [0, -40]);
-  const back = useTransform(spread, (s) => `translateY(${-96 + s * -30}px) translateX(${-14 - s * 10}px) rotate(${-8 - s * 5}deg) scale(0.9)`);
-  const mid = useTransform(spread, (s) => `translateY(${-50 + s * -14}px) translateX(${10 + s * 8}px) rotate(${4 + s * 4}deg) scale(0.95)`);
+/** Buttons that lean toward the cursor a few pixels before you reach them. */
+function Magnetic({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+  const x = useSpring(0, { stiffness: 260, damping: 18 });
+  const y = useSpring(0, { stiffness: 260, damping: 18 });
   return (
-    <motion.div className="w-cards" style={{ y: lift }} initial={{ opacity: 0, y: 60, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.9, duration: 1.2, ease }}>
-      <motion.div className="wcard wcard-pass w-card" style={{ transform: back }} aria-hidden="true">
-        <div className="wcard-top"><span className="wcard-brand">{t("Founder pass", "بطاقة المؤسس")}</span><Origin className="wcard-mark" /></div>
-        <div className="wcard-mid"><span className="wcard-label">{t("Level 2", "المستوى 2")}</span><span className="wcard-amount wcard-rank">{t("Operator", "مشغّل")}</span></div>
-        <div className="wcard-foot wcard-foot-pass"><span className="wcard-progress"><span style={{ inlineSize: "62%" }} /></span><span className="num">540 XP</span></div>
+    <motion.span
+      className="magnetic"
+      style={{ x, y }}
+      onPointerMove={(e) => {
+        if (reduce || e.pointerType !== "mouse") return;
+        const r = e.currentTarget.getBoundingClientRect();
+        x.set((e.clientX - (r.left + r.width / 2)) * 0.22);
+        y.set((e.clientY - (r.top + r.height / 2)) * 0.3);
+      }}
+      onPointerLeave={() => { x.set(0); y.set(0); }}
+    >
+      {children}
+    </motion.span>
+  );
+}
+
+/* ---------- Wallet showcase ---------- */
+
+function WalletShowcase() {
+  const { t } = useI18n();
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.5 });
+  const lay = useTransform(p, [0.08, 0.42], [62, 0]);
+  const rise = useTransform(p, [0.08, 0.42], [120, 0]);
+  const spread = useTransform(p, [0.3, 0.55], [0, 1]);
+  const backT = useTransform(spread, (s) => `translate3d(${s * -64}px, ${s * -150}px, -60px) rotate(${s * -10}deg)`);
+  const midT = useTransform(spread, (s) => `translate3d(${s * 40}px, ${s * -78}px, -30px) rotate(${s * 6}deg)`);
+
+  return (
+    <section ref={ref} className="w-wallet" aria-label={t("Practice wallet", "المحفظة التدريبية")}>
+      <Reveal className="w-wallet-copy">
+        <p className="w-eyebrow">{t("Practice wallet", "المحفظة التدريبية")}</p>
+        <h2 className="w-section-title">{accent(t("Money you can *feel*, without the risk.", "مال *تشعر* به، بلا مخاطرة."))}</h2>
+        <p className="w-wallet-text">{t("Start with practice capital. Protect a reserve. Record every purchase to the baisa and undo a mistake with one tap. The cards move like the real thing.", "ابدأ برأس مال تدريبي. احمِ احتياطياً. سجّل كل عملية شراء بالبيسة وتراجع عن أي خطأ بلمسة واحدة. تتحرك البطاقات كأنها حقيقية.")}</p>
+        <dl className="w-facts">
+          <div><dt>{t("Exact to", "دقيق حتى")}</dt><dd>0.001 <span className="rial-inline" aria-label={t("Omani rial", "ريال عُماني")} /></dd></div>
+          <div><dt>{t("Undo", "تراجع")}</dt><dd>{t("Every action", "كل إجراء")}</dd></div>
+          <div><dt>{t("Export", "تصدير")}</dt><dd>CSV</dd></div>
+        </dl>
+      </Reveal>
+      <motion.div className="w-wallet-stage" style={{ rotateX: lay, y: rise, transformPerspective: 1400 }}>
+        <motion.div className="w-wallet-card" style={{ transform: backT }}>
+          <Tilt className="wcard wcard-pass">
+            <div className="wcard-top"><span className="wcard-brand">{t("Founder pass", "بطاقة المؤسس")}</span><Origin className="wcard-mark" /></div>
+            <div className="wcard-mid"><span className="wcard-label">{t("Level 2", "المستوى 2")}</span><span className="wcard-amount wcard-rank">{t("Operator", "مشغّل")}</span></div>
+            <div className="wcard-foot wcard-foot-pass"><span className="wcard-progress"><span style={{ inlineSize: "62%" }} /></span><span className="num">540 XP</span></div>
+          </Tilt>
+        </motion.div>
+        <motion.div className="w-wallet-card" style={{ transform: midT }}>
+          <Tilt className="wcard wcard-reserve">
+            <div className="wcard-top"><span className="wcard-brand">{t("Reserve", "الاحتياطي")}</span><Origin className="wcard-mark" /></div>
+            <div className="wcard-mid"><span className="wcard-label">{t("Protected for uncertainty", "محمي لمواجهة المجهول")}</span><Money value={1_500_000} className="wcard-amount" /></div>
+            <div className="wcard-foot"><span>{t("Covers 2.0 months of fixed costs", "يغطي شهرين من التكاليف الثابتة")}</span></div>
+          </Tilt>
+        </motion.div>
+        <div className="w-wallet-card is-front">
+          <Tilt className="wcard wcard-capital" max={12}>
+            <div className="wcard-top"><span className="wcard-brand">moasis</span><Origin className="wcard-mark" /></div>
+            <div className="wcard-mid"><span className="wcard-label">{t("Available to spend", "المتاح للإنفاق")}</span><Money value={7_150_000} className="wcard-amount" animate /></div>
+            <div className="wcard-foot"><span className="wcard-holder">{t("Your name here", "اسمك هنا")}</span><span>{t("Simulation", "محاكاة")}</span></div>
+            <span className="wcard-chip" aria-hidden="true" />
+          </Tilt>
+        </div>
       </motion.div>
-      <motion.div className="wcard wcard-reserve w-card" style={{ transform: mid }} aria-hidden="true">
-        <div className="wcard-top"><span className="wcard-brand">{t("Reserve", "الاحتياطي")}</span><Origin className="wcard-mark" /></div>
-        <div className="wcard-mid"><span className="wcard-label">{t("Protected for uncertainty", "محمي لمواجهة المجهول")}</span><Money value={1_500_000} className="wcard-amount" /></div>
-        <div className="wcard-foot"><span>{t("Covers 2.0 months of fixed costs", "يغطي شهرين من التكاليف الثابتة")}</span></div>
-      </motion.div>
-      <div className="wcard wcard-capital w-card is-front">
-        <div className="wcard-top"><span className="wcard-brand">moasis</span><Origin className="wcard-mark" /></div>
-        <div className="wcard-mid"><span className="wcard-label">{t("Available to spend", "المتاح للإنفاق")}</span><Money value={7_150_000} className="wcard-amount" animate /></div>
-        <div className="wcard-foot"><span className="wcard-holder">{t("Your name here", "اسمك هنا")}</span><span>{t("Simulation", "محاكاة")}</span></div>
-        <span className="wcard-sheen w-sheen" aria-hidden="true" />
-      </div>
-    </motion.div>
+    </section>
   );
 }
 
@@ -285,10 +350,12 @@ function Principles() {
         {items.map((it, i) => {
           const I = it.icon;
           return (
-            <Reveal key={it.title} delay={i * 0.08} className="w-principle panel">
+            <Reveal key={it.title} delay={i * 0.08}>
+              <Tilt className="w-principle panel" max={6}>
               <span className="w-principle-icon"><I size={22} /></span>
               <h3>{it.title}</h3>
               <p>{it.body}</p>
+              </Tilt>
             </Reveal>
           );
         })}

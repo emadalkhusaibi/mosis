@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import { ArrowRight, Check, Strategy, Users } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
@@ -17,7 +18,7 @@ export default function PracticePage() {
     <>
       <PageHeader
         eyebrow={t("CEO practice", "تدريب القيادة")}
-        title={t("Rehearse the hard calls.", "تدرّب على القرارات الصعبة.")}
+        title={t("Rehearse the *hard* calls.", "تدرّب على القرارات *الصعبة*.")}
         description={t("Realistic situations scaled to your practice budget. Choose, see the trade-off, and write down what you'd do differently.", "مواقف واقعية بحجم ميزانيتك التدريبية. اختر، وشاهد المقايضة، ودوّن ما ستفعله بشكل مختلف.")}
       />
       <div className="practice-grid">
@@ -29,7 +30,7 @@ export default function PracticePage() {
                 <span className="chapter-icon"><Strategy size={22} /></span>
                 {d ? <span className="chip chip-positive"><Check size={12} weight="bold" />{t("Decided", "تم القرار")}</span> : <span className="chapter-num num">{String(i + 1).padStart(2, "0")}</span>}
               </div>
-              <h2 className="chapter-title">{p(sc.title)}</h2>
+              <h2 className="chapter-title"><Morph name={`scenario-${sc.id}`} kind="morph-text"><span className="vt-text">{p(sc.title)}</span></Morph></h2>
               <p className="chapter-intro">{p(sc.intro)}</p>
               {d && <p className="small muted">{t("Your choice", "اختيارك")}: <strong className="text-ink">{p(sc.options[d.choice].title)}</strong></p>}
               <ArrowRight size={18} className="chapter-arrow flip-rtl" />

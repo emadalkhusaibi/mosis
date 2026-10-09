@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Morph } from "@/components/ui/morph";
 import { notFound, useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpenText, ChartLineUp, Check, Lightbulb } from "@phosphor-icons/react";
 import clsx from "clsx";
@@ -35,8 +36,9 @@ export default function PlanSectionPage() {
       </nav>
       <header className="page-header">
         <div className="min-w-0">
+          <Morph name={`chapter-icon-${sec.id}`}><span className="chapter-icon chapter-icon-lg"><meta.icon size={26} /></span></Morph>
           <p className="eyebrow">{t(`Chapter ${idx + 1} of ${sections.length}`, `الفصل ${idx + 1} من ${sections.length}`)}</p>
-          <h1 className="page-title">{p(sec.name)}</h1>
+          <h1 className="page-title"><Morph name={`chapter-${sec.id}`} kind="morph-text"><span className="vt-text">{p(sec.name)}</span></Morph></h1>
           <p className="page-description">{p(sec.intro)}</p>
         </div>
       </header>

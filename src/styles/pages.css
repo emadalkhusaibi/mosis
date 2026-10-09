@@ -399,3 +399,25 @@
 .consult-list .activity-tools { margin-bottom: 10px; } .consult-list .search-field { flex: 1 1 auto; min-width: 0; }
 .settings-row > .flex-1 { flex: 1 1 240px; }
 .setup-art-media { position: absolute; inset: 0; }
+.wcard-slot { position: absolute; inset: 0; transform-origin: 50% 0%; transform-style: preserve-3d; }
+.wcard-slot .wcard { transform-origin: 50% 50%; }
+.stack-wrap { perspective: 1200px; }
+
+/* ============ Depth & life (rebuild pass 2) ============ */
+.level-3d { position: relative; width: 132px; height: 132px; margin: -10px auto -4px; }
+.level-3d .origin-3d-svg { width: 54px; }
+.mini-card { transform-style: preserve-3d; }
+.mini-card .tilt-glare { border-radius: 18px; }
+
+/* Hero imagery breathes slowly, like a live photo */
+.hero-art { overflow: hidden; }
+.hero-art img { animation: drift 22s ease-in-out infinite alternate; transform-origin: 60% 40%; }
+@keyframes drift { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); } }
+.field-art { overflow: hidden; }
+.field-art img { transition: transform 1.2s var(--ease-out); }
+.field-card:hover .field-art img { transform: scale(1.05); }
+
+/* Charts draw themselves in */
+.cash-chart svg { animation: reveal-x 1.4s var(--ease-out) both 200ms; }
+@keyframes reveal-x { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -10% 0 0); } }
+.chapter-icon-lg { width: 52px; height: 52px; border-radius: 16px; margin-bottom: 14px; }
