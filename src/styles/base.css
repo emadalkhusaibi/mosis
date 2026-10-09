@@ -1,0 +1,90 @@
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--canvas);
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: var(--t-body);
+    line-height: 1.47;
+    letter-spacing: -0.011em;
+  }
+
+  :lang(ar),
+  [lang="ar"] {
+    font-family: var(--font-arabic);
+    letter-spacing: 0;
+    line-height: 1.7;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  :lang(ar) h1, :lang(ar) h2, :lang(ar) h3, :lang(ar) h4 {
+    font-family: var(--font-arabic);
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
+  p { text-wrap: pretty; }
+
+  ::selection { background: rgb(124 135 146 / 0.32); }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  button, [role="button"] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  button:disabled { cursor: not-allowed; }
+
+  input, textarea, select { font: inherit; color: inherit; }
+
+  .num, .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Environment layer: a soft wallpaper behind the app, fading into canvas */
+.environment {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 85% -10%, rgb(255 255 255 / 0.5), transparent 60%),
+    radial-gradient(90% 70% at -10% 110%, rgb(124 135 146 / 0.18), transparent 60%),
+    var(--canvas);
+}
+.environment::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/images/liquid-wallpaper.webp") center / cover no-repeat;
+  opacity: var(--wallpaper-opacity);
+  mix-blend-mode: luminosity;
+  mask-image: linear-gradient(to bottom, black 0%, rgb(0 0 0 / 0.5) 45%, transparent 85%);
+}
+[data-theme="dark"] .environment {
+  background:
+    radial-gradient(120% 80% at 85% -10%, rgb(124 135 146 / 0.16), transparent 60%),
+    radial-gradient(90% 70% at -10% 110%, rgb(124 135 146 / 0.08), transparent 60%),
+    var(--canvas);
+}
