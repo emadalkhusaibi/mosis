@@ -211,7 +211,7 @@ export function StorageStatus() {
   );
 }
 
-function LanguageToggle() {
+export function LanguageToggle() {
   const { lang, setLang } = useI18n();
   return (
     <button type="button" className="icon-btn lang-btn" onClick={() => setLang(lang === "ar" ? "en" : "ar")} aria-label={lang === "ar" ? "Switch to English" : "التبديل إلى العربية"}>

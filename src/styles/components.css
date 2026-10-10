@@ -336,16 +336,15 @@ a.row:hover, button.row:hover { background: var(--surface-hover); }
 .stack { display: grid; gap: var(--space-5); }
 .stack-sm { display: grid; gap: var(--space-3); }
 .cluster { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-.grid-12 { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 64rem) {
-  .grid-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-  .col-8 { grid-column: span 8; }
-  .col-7 { grid-column: span 7; }
-  .col-6 { grid-column: span 6; }
-  .col-5 { grid-column: span 5; }
-  .col-4 { grid-column: span 4; }
-  .col-12 { grid-column: span 12; }
+.grid-12 { display: grid; gap: var(--space-5); grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: start; }
+.grid-12 > * { grid-column: span 12; min-inline-size: 0; }
+@media (min-width: 48rem) {
+  .col-md-4 { grid-column: span 4; } .col-md-6 { grid-column: span 6; } .col-md-8 { grid-column: span 8; } .col-md-12 { grid-column: span 12; }
 }
+@media (min-width: 64rem) {
+  .col-lg-4 { grid-column: span 4; } .col-lg-5 { grid-column: span 5; } .col-lg-6 { grid-column: span 6; } .col-lg-7 { grid-column: span 7; } .col-lg-8 { grid-column: span 8; } .col-lg-12 { grid-column: span 12; }
+}
+
 
 /* ============ Motion ============ */
 /* One gentle arrival per route; no per-card staggering, no blur, no tilt. */
