@@ -24,11 +24,11 @@ export function Field({ label, hint, error, children, id, optional, className }:
 }
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...rest }, ref) {
-  return <input ref={ref} className={clsx("input", className)} {...rest} />;
+  return <input ref={ref} dir="auto" className={clsx("input", className)} {...rest} />;
 });
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function TextArea({ className, ...rest }, ref) {
-  return <textarea ref={ref} className={clsx("input textarea", className)} {...rest} />;
+  return <textarea ref={ref} dir="auto" className={clsx("input textarea", className)} {...rest} />;
 });
 
 const parsed = (raw: string, allowNegative: boolean) => {

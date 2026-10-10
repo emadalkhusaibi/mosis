@@ -199,3 +199,94 @@
 .review-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-4); border-block-end: 1px solid var(--border); }
 .review-row:last-child { border-block-end: 0; }
 .review-value { font-weight: 550; margin-block-start: 2px; overflow-wrap: anywhere; }
+
+/* ============ Plan ============ */
+.plan-summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); margin-block-end: var(--space-5); }
+.plan-summary-text { flex: 1 1 16rem; min-inline-size: 0; display: grid; gap: var(--space-1); }
+.plan-summary-bar { flex: 1 1 12rem; }
+.plan-summary .stat-value { font-size: var(--text-section); }
+.chapter-list { list-style: none; margin: 0; padding: 0; }
+.chapter-list li + li { border-block-start: 1px solid var(--border); }
+.chapter-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); color: inherit; text-decoration: none; transition: background var(--duration-fast); }
+.chapter-row:hover { background: var(--surface-hover); }
+.chapter-list li:first-child .chapter-row { border-start-start-radius: inherit; border-start-end-radius: inherit; }
+.chapter-row-icon { display: grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border-radius: 0.75rem; background: var(--surface-subtle); color: var(--text-secondary); flex: none; }
+.chapter-row.is-done .chapter-row-icon { background: var(--positive-soft); color: var(--positive); }
+.chapter-row.is-next .chapter-row-icon { background: var(--accent-soft); color: var(--accent); }
+.chapter-row-main { flex: 1; min-inline-size: 0; display: grid; gap: 2px; }
+.chapter-row-title { font-weight: 600; }
+.chapter-row-n { color: var(--text-muted); font-variant-numeric: tabular-nums; margin-inline-end: var(--space-1); }
+.chapter-row-intro { color: var(--text-secondary); font-size: var(--text-label); }
+.chapter-row-meta { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); flex: none; }
+.chapter-row-count { font-size: var(--text-caption); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.chapter-row-arrow { color: var(--text-muted); flex: none; }
+@media (max-width: 40rem) { .chapter-row { padding: var(--space-4); gap: var(--space-3); align-items: flex-start; } .chapter-row-arrow { display: none; } .chapter-row-intro { display: none; } }
+
+/* Editor: outline · writing column · guidance rail. The rail goes first as space shrinks. */
+.plan-editor { display: grid; gap: var(--space-6); grid-template-columns: minmax(0, 1fr); }
+.plan-outline, .plan-rail { display: none; }
+.plan-doc-column { min-inline-size: 0; max-inline-size: 68ch; inline-size: 100%; }
+.plan-picker { margin-block-end: var(--space-5); }
+@media (min-width: 64rem) {
+  .plan-editor { grid-template-columns: 13rem minmax(0, 1fr); }
+  .plan-picker { display: none; }
+  .plan-outline { display: block; position: sticky; inset-block-start: calc(var(--header-height) + var(--space-6)); align-self: start; }
+}
+@media (min-width: 90rem) {
+  .plan-editor { grid-template-columns: 13rem minmax(0, 68ch) minmax(15rem, 17rem); justify-content: space-between; }
+  .plan-rail { display: grid; gap: var(--space-5); position: sticky; inset-block-start: calc(var(--header-height) + var(--space-6)); align-self: start; }
+}
+.plan-outline-back { display: inline-flex; align-items: center; gap: var(--space-1); margin-block-end: var(--space-3); }
+.plan-outline ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.plan-outline a { display: flex; align-items: center; gap: var(--space-2); min-block-size: 2.5rem; padding-inline: var(--space-2); border-radius: var(--radius-control); color: var(--text-secondary); text-decoration: none; font-size: var(--text-label); }
+.plan-outline a:hover { background: var(--surface-hover); color: var(--text); }
+.plan-outline a[aria-current="page"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 0 0 1px var(--border); }
+.plan-outline a.is-done .chapter-mini-n { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.plan-chapter-head { display: grid; gap: var(--space-2); margin-block-end: var(--space-6); }
+.plan-chapter-head .save-status { min-block-size: 1.25rem; }
+.question-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-8); }
+.question { display: grid; gap: var(--space-2); }
+.question-label { display: flex; gap: var(--space-3); align-items: flex-start; font-weight: 600; font-size: var(--text-body); line-height: 1.4; }
+.question-n { display: grid; place-items: center; inline-size: 1.5rem; block-size: 1.5rem; border-radius: 50%; border: 1px solid var(--border-strong); font-size: 0.75rem; font-weight: 600; flex: none; margin-block-start: 1px; color: var(--text-secondary); }
+.question-n.is-done { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.question-hint { color: var(--text-secondary); font-size: var(--text-label); padding-inline-start: calc(1.5rem + var(--space-3)); }
+.question-input { min-block-size: 7.5rem; line-height: 1.6; }
+:lang(ar) .question-input { line-height: 1.9; }
+.question-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); font-size: var(--text-caption); color: var(--text-muted); }
+.question-foot .is-warn { color: var(--warning); font-weight: 600; }
+.section-nav { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-block-start: var(--space-10, 2.5rem); padding-block-start: var(--space-5); border-block-start: 1px solid var(--border); }
+.rail-block { display: grid; gap: var(--space-2); font-size: var(--text-label); color: var(--text-secondary); padding-block-end: var(--space-5); border-block-end: 1px solid var(--border); }
+.rail-block:last-child { border-block-end: 0; }
+.rail-title { font-size: var(--text-caption); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+:lang(ar) .rail-title { text-transform: none; letter-spacing: normal; }
+.rail-block strong { color: var(--text); }
+
+/* Full plan document, also the print layout */
+.plan-print { max-inline-size: 72ch; margin-inline: auto; display: grid; gap: var(--space-6); }
+.plan-print-tools { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.plan-print-head { display: grid; gap: var(--space-2); padding-block-end: var(--space-6); border-block-end: 1px solid var(--border); }
+.plan-print-mark { inline-size: 2.25rem; block-size: 2.25rem; margin-block-end: var(--space-2); }
+.plan-print-idea { font-size: var(--text-section); line-height: 1.5; margin-block-start: var(--space-2); }
+.plan-print-numbers .stat-grid { margin: var(--space-3) 0 0; }
+.plan-print-numbers dd { margin: 0; }
+.plan-print-numbers .stat-value { font-size: 1.125rem; }
+.plan-print-section { display: grid; gap: var(--space-4); padding-block-start: var(--space-6); border-block-start: 1px solid var(--border); break-inside: auto; }
+.plan-print-section h2 { font-size: var(--text-section); font-weight: 620; display: flex; gap: var(--space-3); align-items: baseline; }
+.plan-print-n { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.plan-print-q { break-inside: avoid; }
+.plan-print-q h3 { font-size: var(--text-label); font-weight: 600; color: var(--text-secondary); margin-block-end: var(--space-1); }
+.plan-print-q p { white-space: pre-wrap; line-height: 1.7; }
+:lang(ar) .plan-print-q p { line-height: 1.9; }
+.plan-print-empty { color: var(--text-muted); font-style: italic; }
+:lang(ar) .plan-print-empty { font-style: normal; }
+.plan-print-foot { padding-block-start: var(--space-6); border-block-start: 1px solid var(--border); }
+
+@media print {
+  @page { margin: 18mm 16mm; }
+  .app-sidebar, .app-topbar, .mobile-nav, .no-print, .toasts, .skip-link { display: none !important; }
+  .app-shell { display: block !important; }
+  .app-main { padding: 0 !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .plan-print { max-inline-size: none; }
+  .notice { background: none !important; border: 1px solid #999; }
+}

@@ -194,7 +194,7 @@ export function StorageStatus() {
       <p className={`save-status${status === "error" || status === "conflict" ? " is-error" : ""}`} role="status">
         <I size={16} aria-hidden="true" />
         <span>{s.text}</span>
-        {status === "error" && mode === "account" && <button type="button" className="link" onClick={retry}>{t("Retry", "إعادة")}</button>}
+        {status === "error" && <button type="button" className="link" onClick={retry}>{t("Retry", "إعادة")}</button>}
       </p>
       {mode === "guest" && !dismissed && !hide && (
         <p className="small muted flex items-start gap-1">
