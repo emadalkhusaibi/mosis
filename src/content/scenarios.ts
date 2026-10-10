@@ -11,8 +11,8 @@ export const scenarios: Scenario[] = [
     id: "capacity",
     title: w("Demand is stretching the team", "الطلب يضغط على الفريق"),
     intro: w(
-      "More customers are arriving, but delivery is slowing and mistakes are increasing. You need a response that fits your cash and capacity.",
-      "يزداد العملاء لكن التنفيذ يتباطأ والأخطاء تتزايد. تحتاج لاستجابة تناسب النقد والطاقة لديك.",
+      "More {customers} are arriving, but delivery is slowing and mistakes are increasing. You need a response that fits your cash and capacity.",
+      "يزداد {customers} لكن التنفيذ يتباطأ والأخطاء تتزايد. تحتاج لاستجابة تناسب النقد والطاقة لديك.",
     ),
     options: [
       {
@@ -57,8 +57,8 @@ export const scenarios: Scenario[] = [
     id: "pricing",
     title: w("A competitor lowers prices", "منافس يخفض أسعاره"),
     intro: w(
-      "A nearby competitor announces a discount. Some customers mention it. You must respond without confusing attention with sustainable demand.",
-      "يعلن منافس خصماً ويذكره بعض العملاء. عليك الاستجابة دون الخلط بين الاهتمام والطلب المستدام.",
+      "A nearby competitor announces a discount. Some {customers} mention it. You must respond without confusing attention with sustainable demand.",
+      "يعلن منافس خصماً ويذكره بعض {customers}. عليك الاستجابة دون الخلط بين الاهتمام والطلب المستدام.",
     ),
     options: [
       {
@@ -152,8 +152,8 @@ export const scenarios: Scenario[] = [
     id: "marketing",
     title: w("Choose your first growth channel", "اختر أول قناة للنمو"),
     intro: w(
-      "You have a small marketing budget. You need customers and a way to learn whether your spending works.",
-      "لديك ميزانية تسويق صغيرة. تحتاج لعملاء وطريقة لمعرفة أثر إنفاقك.",
+      "You have a small marketing budget. You need {customers} and a way to learn whether your spending works.",
+      "لديك ميزانية تسويق صغيرة. تحتاج إلى {customers} وطريقة لمعرفة أثر إنفاقك.",
     ),
     options: [
       {

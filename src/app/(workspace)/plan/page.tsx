@@ -4,15 +4,16 @@ import { ArrowRight, Check, FileText } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
-import { sections } from "@/content/sections";
 import { sectionMeta } from "@/content/plan-meta";
 import { sectorOf } from "@/content/sectors";
 import { planProgress } from "@/domain/progress";
 
 export default function PlanPage() {
+  const { sections } = useContent();
   const { t, p } = useI18n();
   const { state } = useWorkspace();
   const prog = planProgress(state);

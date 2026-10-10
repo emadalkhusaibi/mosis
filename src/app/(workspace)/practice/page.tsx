@@ -3,12 +3,13 @@ import Link from "next/link";
 import { ArrowRight, Check, Strategy, Users } from "@phosphor-icons/react";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
-import { scenarios } from "@/content/scenarios";
 
 export default function PracticePage() {
+  const { scenarios } = useContent();
   const { t, p, date } = useI18n();
   const { state } = useWorkspace();
   const decided = new Map(state.decisions.map((d) => [d.id, d]));
