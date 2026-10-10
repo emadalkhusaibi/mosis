@@ -17,8 +17,8 @@
   --ice: #f1f4f6;
 
   /* Type */
-  --font-ui: "Geist Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-ar: "Readex Pro Variable", "Geist Variable", system-ui, sans-serif;
+  --font-ui: "Sora Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-ar: "Tajawal", "Sora Variable", system-ui, sans-serif;
   --font-editorial: "Instrument Serif", Georgia, serif;
   --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
 

@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import "@fontsource-variable/geist/wght.css";
-import "@fontsource-variable/readex-pro/wght.css";
+import "@fontsource-variable/sora/wght.css";
+import "@fontsource/tajawal/400.css";
+import "@fontsource/tajawal/500.css";
+import "@fontsource/tajawal/700.css";
+import "@fontsource/tajawal/800.css";
 import "@fontsource-variable/geist-mono/wght.css";
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
