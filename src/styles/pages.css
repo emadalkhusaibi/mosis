@@ -510,3 +510,23 @@
 .brand-stage-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 #brand-partner { scroll-margin-top: 5rem; }
 @media (min-width: 64rem) { .brand-jump { display: none; } }
+
+/* AI logo concepts */
+.concepts { display: grid; gap: var(--space-3); padding-block-end: var(--space-6); margin-block-end: var(--space-6); border-block-end: 1px solid var(--border); }
+.concepts-head { display: grid; gap: var(--space-1); }
+.concepts-brief { display: flex; gap: var(--space-2); align-items: flex-end; flex-wrap: wrap; }
+.concepts-brief .textarea { flex: 1 1 16rem; resize: vertical; min-block-size: 3rem; }
+.concept-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); transition: opacity 0.2s; }
+.concept-grid.is-stale { opacity: 0.5; }
+.concept-card { display: grid; gap: var(--space-2); align-content: start; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-control); min-width: 0; }
+.concept-card.is-on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.concept-art { display: grid; place-items: center; aspect-ratio: 1; border-radius: calc(var(--radius-control) - 2px); overflow: hidden; border: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.concept-art img { inline-size: 80%; block-size: auto; }
+.concept-card.is-loading .concept-art { background: var(--surface-subtle); animation: concept-pulse 1.4s ease-in-out infinite; }
+@keyframes concept-pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .concept-card.is-loading .concept-art { animation: none; } }
+.concept-title { font-weight: 650; }
+.concept-actions { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.brand-letter-title { margin-block-end: var(--space-3); }
+.brand-art { display: block; object-fit: contain; flex: none; }
+.mock-sign-tile { background: #fff; border-radius: 0.5rem; padding: 2px; display: grid; place-items: center; }

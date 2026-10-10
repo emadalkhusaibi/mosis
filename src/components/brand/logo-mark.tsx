@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { onColor, type Logo, type Palette } from "@/domain/brand";
+import { onColor, svgDataUri, type Logo, type Palette } from "@/domain/brand";
 
 const SHAPES: Record<Exclude<Logo["shape"], "none">, string> = {
   circle: "M50 4a46 46 0 1 1 0 92a46 46 0 1 1 0-92Z",
@@ -37,12 +37,21 @@ export const LogoMark = forwardRef<SVGSVGElement, { logo: Logo; colors: Palette;
   );
 });
 
+/** The logo in use: the AI-drawn artwork when one is chosen, otherwise the letter mark. */
+export function BrandMark({ logo, colors, size = 96, title }: { logo: Logo; colors: Palette; size?: number; title?: string }) {
+  if (logo.custom) {
+    // eslint-disable-next-line @next/next/no-img-element -- a data URI; an <img> also guarantees the SVG can't run anything.
+    return <img src={svgDataUri(logo.custom)} width={size} height={size} alt={title ?? ""} className="brand-art" />;
+  }
+  return <LogoMark logo={logo} colors={colors} size={size} title={title} />;
+}
+
 /** Mark plus name, side by side or stacked, on the brand's own background. */
 export function BrandLockup({ logo, colors, name, nameAr, tagline, size = 72, layout }: { logo: Logo; colors: Palette; name: string; nameAr?: string; tagline?: string; size?: number; layout?: Logo["layout"] }) {
   const lay = layout ?? logo.layout;
   return (
     <div className={`brand-lockup brand-lockup-${lay}`} style={{ color: colors.primary }}>
-      <LogoMark logo={logo} colors={colors} size={size} />
+      <BrandMark logo={logo} colors={colors} size={size} />
       <div className="brand-lockup-text">
         <span className="brand-lockup-name" dir="auto">{name || "—"}</span>
         {nameAr && <span className="brand-lockup-ar" dir="rtl" lang="ar">{nameAr}</span>}

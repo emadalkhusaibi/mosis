@@ -12,16 +12,22 @@ export type NameIdea = z.infer<typeof nameIdeaSchema>;
 export const paletteSchema = z.object({ primary: hex, accent: hex, surface: hex });
 export type Palette = z.infer<typeof paletteSchema>;
 
+export const MAX_SVG = 24_000;
 export const logoSchema = z.object({
   shape: z.enum(logoShapes),
   mark: z.string().max(3),
   font: z.enum(logoFonts),
   layout: z.enum(logoLayouts),
+  /** An AI-drawn logo (SVG markup) that replaces the letter mark when set. */
+  custom: z.string().max(MAX_SVG).optional(),
 });
 export type Logo = z.infer<typeof logoSchema>;
 
 export const chatMessageSchema = z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) });
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+
+export const conceptSchema = z.object({ title: z.string().max(60), idea: z.string().max(300), svg: z.string().max(MAX_SVG) });
+export type Concept = z.infer<typeof conceptSchema>;
 
 export const brandSchema = z.object({
   name: z.string().max(60),
@@ -31,6 +37,8 @@ export const brandSchema = z.object({
   colors: paletteSchema,
   logo: logoSchema,
   chat: z.array(chatMessageSchema).max(40),
+  /** The latest AI logo concepts, kept so they survive a reload. */
+  concepts: z.array(conceptSchema).max(4).optional(),
 });
 export type Brand = z.infer<typeof brandSchema>;
 
@@ -138,3 +146,51 @@ export function nameIdeas(sector: string, seed: number, lang: "en" | "ar", count
   }
   return out;
 }
+
+/* ---------- AI-drawn logos ---------- */
+
+const SVG_TAGS = new Set(["svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon", "text", "tspan", "defs", "lineargradient", "radialgradient", "stop", "clippath", "title"]);
+const SVG_ATTRS = new Set([
+  "xmlns", "viewbox", "width", "height", "d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "points",
+  "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "fill-rule", "clip-rule", "opacity",
+  "fill-opacity", "stroke-opacity", "transform", "id", "offset", "stop-color", "stop-opacity", "gradientunits", "gradienttransform",
+  "clip-path", "font-family", "font-size", "font-weight", "text-anchor", "dominant-baseline", "letter-spacing", "role", "aria-label",
+]);
+
+/**
+ * Accepts only plain vector drawing: an allowlist of shape elements and attributes, no scripts,
+ * styles, links, images or event handlers. url() is allowed only for in-file references (#id).
+ * Returns the markup unchanged when it passes, otherwise null.
+ */
+export function safeSvg(svg: string): string | null {
+  const s = svg.trim();
+  if (!s.startsWith("<svg") || !s.endsWith("</svg>") || s.length > MAX_SVG) return null;
+  if (/<!|<\?|&#|\\/.test(s)) return null;
+  const tag = /<\/?([a-zA-Z][\w:-]*)([^>]*)>/g;
+  let m: RegExpExecArray | null;
+  let last = 0;
+  while ((m = tag.exec(s))) {
+    // Text between tags may only be words inside <text>/<title>; it can never contain markup.
+    if (/[<>]/.test(s.slice(last, m.index))) return null;
+    last = tag.lastIndex;
+    if (!SVG_TAGS.has(m[1].toLowerCase())) return null;
+    const attrs = m[2].replace(/\/\s*$/, "");
+    const attr = /\s*([a-zA-Z][\w:-]*)\s*=\s*("([^"]*)"|'([^']*)')/g;
+    let rest = attrs;
+    let a: RegExpExecArray | null;
+    while ((a = attr.exec(attrs))) {
+      const name = a[1].toLowerCase();
+      const value = a[3] ?? a[4] ?? "";
+      if (!SVG_ATTRS.has(name)) return null;
+      if (/url\(/i.test(value) && !/^url\(#[\w-]+\)$/.test(value.trim())) return null;
+      if (/javascript:|data:|expression\(/i.test(value)) return null;
+      rest = rest.replace(a[0], "");
+    }
+    if (rest.trim()) return null;
+  }
+  if (/[<>]/.test(s.slice(last))) return null;
+  return s;
+}
+
+/** An <img>-safe data URI; images never run scripts even if something slipped through. */
+export const svgDataUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;

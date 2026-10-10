@@ -3,9 +3,9 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { brandSchema, chatMessageSchema, logoShapes, logoFonts } from "@/domain/brand";
 import { sectorOf } from "@/content/sectors";
+import { limited, noStore as json, sameOrigin } from "@/server/ai";
 
 export const dynamic = "force-dynamic";
-const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 const MAX_BODY = 40_000;
 const MAX_TURNS = 12;
@@ -21,7 +21,8 @@ const requestSchema = z.object({
     city: z.string().max(80),
     idea: z.string().max(600),
   }),
-  brand: brandSchema.omit({ chat: true }),
+  brand: brandSchema.omit({ chat: true, concepts: true }),
+  usesDrawnLogo: z.boolean().optional(),
 });
 
 /** What the model must return. Lengths are enforced after parsing. */
@@ -38,18 +39,7 @@ const replySchema = z.object({
 
 const isHex = (s: string) => /^#[0-9a-fA-F]{6}$/.test(s);
 
-/** A small per-instance limiter: enough to stop a runaway loop, not a billing control. */
-const hits = new Map<string, number[]>();
-function limited(key: string) {
-  const now = Date.now();
-  const recent = (hits.get(key) ?? []).filter((t) => now - t < 10 * 60_000);
-  recent.push(now);
-  hits.set(key, recent);
-  if (hits.size > 5000) hits.clear();
-  return recent.length > 20;
-}
-
-function systemPrompt(v: z.infer<typeof requestSchema>["venture"], b: z.infer<typeof requestSchema>["brand"], lang: "en" | "ar") {
+function systemPrompt(v: z.infer<typeof requestSchema>["venture"], b: z.infer<typeof requestSchema>["brand"], lang: "en" | "ar", drawn: boolean) {
   const sector = sectorOf(v.sector);
   return `You are the brand partner inside Moasis, a workspace for people starting small businesses in Oman. You help one founder create their business name, colours and a simple logo. You are warm, direct and practical, like an experienced Omani designer who also understands small-business budgets.
 
@@ -63,25 +53,23 @@ Their brand so far
 - Name: ${b.name || "none"}${b.nameAr ? ` / ${b.nameAr}` : ""}
 - Tagline: ${b.tagline || "none"}
 - Colours: primary ${b.colors.primary}, accent ${b.colors.accent}, background ${b.colors.surface}
-- Logo: ${b.logo.shape} shape, mark "${b.logo.mark}", ${b.logo.font} lettering
+- Logo: ${drawn ? "an AI-drawn logo picked from the concepts the studio drew" : `${b.logo.shape} shape, mark "${b.logo.mark}", ${b.logo.font} lettering`}
 - Shortlisted names: ${b.shortlist.map((n) => `${n.en} / ${n.ar}`).join("; ") || "none"}
 
 How to help
 - Reply in ${lang === "ar" ? "Arabic (Modern Standard, natural for Gulf readers)" : "English"}. Keep replies under 120 words. Ask at most one question at a time.
 - Names: every idea has an English form and an Arabic form that sound related, are easy to say in both, and suit Oman. Explain the meaning briefly in "why". Avoid names of real, well-known companies and religious or tribal names. Remind the founder to check availability on the Oman Business Platform and for social handles; never claim a name is available or registrable.
 - Colours: suggest palettes where text on the primary colour is readable. Primary and background must contrast strongly. Say what feeling each palette gives.
-- Logo: the studio can draw a mark inside a circle, square, arch (an Omani doorway), hexagon, leaf, or no shape, with 1 to 3 letters. Suggest within those options.
+- Logo: the studio has a "Draw logo ideas" button in the Logo section that draws full pictorial logo concepts; when the founder wants a drawn logo, help them write a short description to put in that box. For a simple letter mark you can suggest a shape (circle, square, arch, hexagon, leaf or none) with 1 to 3 letters.
 - Only fill "names", "palettes" or "logo" when they are being discussed; otherwise leave them empty or null.
 - You only help with naming, colour, logo, tagline and brand voice for this business. Politely decline other requests.`;
 }
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return json({ error: "invalid_origin" }, 403);
+  if (!sameOrigin(request)) return json({ error: "invalid_origin" }, 403);
   if (!process.env.ANTHROPIC_API_KEY) return json({ error: "not_configured" }, 503);
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (limited(ip)) return json({ error: "rate_limited" }, 429);
+  if (limited(request, "chat", 20)) return json({ error: "rate_limited" }, 429);
 
   const raw = await request.text();
   if (raw.length > MAX_BODY) return json({ error: "too_large" }, 413);
@@ -104,7 +92,7 @@ export async function POST(request: Request) {
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: { effort: "low", format: betaZodOutputFormat(replySchema) },
-      system: systemPrompt(body.venture, body.brand, body.lang),
+      system: systemPrompt(body.venture, body.brand, body.lang, Boolean(body.usesDrawnLogo)),
       messages: turns.map((m) => ({ role: m.role, content: m.text })),
     });
     if (response.stop_reason === "refusal") return json({ error: "declined" }, 422);

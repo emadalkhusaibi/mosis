@@ -46,13 +46,15 @@ export function BrandAssistant({ brand, setBrand }: { brand: Brand; setBrand: (f
     setFailure(null);
     setSuggest(null);
     try {
-      const { chat: _chat, ...rest } = brand;
-      void _chat;
+      // Send the brand without the conversation or drawn artwork; the route only needs the facts.
+      const { chat: _chat, concepts: _concepts, ...rest } = brand;
+      void _chat; void _concepts;
+      const facts = { ...rest, logo: { ...rest.logo, custom: undefined } };
       const v = state.venture;
       const res = await fetch("/api/brand-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lang, messages: history.slice(-24), venture: { name: v.name, sector: v.sector, other: v.other, city: v.city, idea: v.idea }, brand: rest }),
+        body: JSON.stringify({ lang, messages: history.slice(-24), venture: { name: v.name, sector: v.sector, other: v.other, city: v.city, idea: v.idea }, brand: facts, usesDrawnLogo: Boolean(brand.logo.custom) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -145,7 +147,7 @@ export function BrandAssistant({ brand, setBrand }: { brand: Brand; setBrand: (f
             <div className="brand-suggest-card">
               <LogoMark logo={{ ...brand.logo, ...suggest.logo }} colors={brand.colors} size={44} />
               <p className="field-hint min-w-0" dir="auto">{suggest.logo.why}</p>
-              <Button size="sm" variant="secondary" onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, shape: suggest.logo!.shape, mark: suggest.logo!.mark, font: suggest.logo!.font } }))}>{t("Apply", "طبّق")}</Button>
+              <Button size="sm" variant="secondary" onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, shape: suggest.logo!.shape, mark: suggest.logo!.mark, font: suggest.logo!.font, custom: undefined } }))}>{t("Apply", "طبّق")}</Button>
             </div>
           )}
         </div>

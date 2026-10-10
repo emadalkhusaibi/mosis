@@ -9,7 +9,8 @@ import { Field, Input } from "@/components/ui/field";
 import { Button, IconButton } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { useToast } from "@/components/ui/toast";
-import { LogoMark, BrandLockup } from "@/components/brand/logo-mark";
+import { LogoMark, BrandLockup, BrandMark } from "@/components/brand/logo-mark";
+import { LogoConcepts } from "@/components/brand/concepts";
 import { BrandAssistant, brandOf } from "@/components/brand/assistant";
 import { sectorOf } from "@/content/sectors";
 import { contrast, initials, logoShapes, nameIdeas, onColor, palettes, type Brand, type NameIdea, type Palette } from "@/domain/brand";
@@ -24,9 +25,9 @@ export default function BrandPage() {
   const markRef = useRef<SVGSVGElement>(null);
 
   const download = () => {
-    const svg = markRef.current;
-    if (!svg) return;
-    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    const markup = brand.logo.custom ?? (markRef.current ? new XMLSerializer().serializeToString(markRef.current) : null);
+    if (!markup) return;
+    const blob = new Blob([markup], { type: "image/svg+xml" });
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `${(brand.name || "logo").replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-logo.svg` });
     a.click();
     URL.revokeObjectURL(a.href);
@@ -46,8 +47,8 @@ export default function BrandPage() {
         <div className="brand-main">
           <NamePanel brand={brand} setBrand={setBrand} sector={v.sector} ventureName={v.name}
             onAdopt={() => { ws.update((s) => ({ ...s, venture: { ...s.venture, name: brand.name } })); toast({ message: t("Business name updated across your workspace.", "حُدّث اسم المشروع في مساحة عملك.") }); }} />
-          <ColourPanel brand={brand} setBrand={setBrand} lang={lang} />
           <LogoPanel brand={brand} setBrand={setBrand} />
+          <ColourPanel brand={brand} setBrand={setBrand} lang={lang} />
         </div>
         <aside className="brand-side">
           <BrandAssistant brand={brand} setBrand={setBrand} />
@@ -73,7 +74,7 @@ function Preview({ brand, markRef, onDownload }: { brand: Brand; markRef: React.
         </div>
       </div>
       <div className="brand-stage-hero">
-        <LogoMark ref={markRef} logo={logo} colors={colors} size={112} title={t(`${name} logo`, `شعار ${name}`)} />
+        {logo.custom ? <BrandMark logo={logo} colors={colors} size={112} title={t(`${name} logo`, `شعار ${name}`)} /> : <LogoMark ref={markRef} logo={logo} colors={colors} size={112} title={t(`${name} logo`, `شعار ${name}`)} />}
         <div className="brand-lockup-text">
           <span className="brand-hero-name" dir="auto">{name}</span>
           {brand.nameAr && <span className="brand-hero-ar" lang="ar" dir="rtl">{brand.nameAr}</span>}
@@ -83,7 +84,7 @@ function Preview({ brand, markRef, onDownload }: { brand: Brand; markRef: React.
       <ul className="brand-mocks" aria-label={t("Your brand in use", "هويتك قيد الاستخدام")}>
         <li>
           <div className="mock-sign" style={{ background: colors.primary, color: onColor(colors.primary) }}>
-            <LogoMark logo={{ ...logo, shape: logo.shape === "none" ? "circle" : logo.shape }} colors={{ ...colors, primary: colors.surface, accent: colors.accent }} size={40} />
+            {logo.custom ? <span className="mock-sign-tile"><BrandMark logo={logo} colors={colors} size={36} /></span> : <LogoMark logo={{ ...logo, shape: logo.shape === "none" ? "circle" : logo.shape }} colors={{ ...colors, primary: colors.surface, accent: colors.accent }} size={40} />}
             <span dir="auto">{name}</span>
             {brand.nameAr && <span lang="ar" dir="rtl" className="mock-sign-ar">{brand.nameAr}</span>}
           </div>
@@ -99,7 +100,7 @@ function Preview({ brand, markRef, onDownload }: { brand: Brand; markRef: React.
         </li>
         <li>
           <div className="mock-avatar">
-            <span className="mock-avatar-ring" style={{ borderColor: colors.accent }}><LogoMark logo={logo.shape === "none" ? { ...logo, shape: "circle" } : logo} colors={colors} size={64} /></span>
+            <span className="mock-avatar-ring" style={{ borderColor: colors.accent }}><BrandMark logo={logo.shape === "none" && !logo.custom ? { ...logo, shape: "circle" } : logo} colors={colors} size={64} /></span>
             <span className="mock-avatar-name" dir="auto">{name}</span>
           </div>
           <span className="brand-mock-label">{t("Instagram profile", "حساب إنستغرام")}</span>
@@ -234,12 +235,14 @@ function LogoPanel({ brand, setBrand }: { brand: Brand; setBrand: (fn: (b: Brand
   const fromName = initials(lang === "ar" && brand.nameAr ? brand.nameAr : brand.name || brand.nameAr);
   return (
     <Panel aria-labelledby="logo-title">
-      <PanelHeader id="logo-title" title={t("Logo", "الشعار")} subtitle={t("A simple mark you can print, stitch or paint. You can hand it to a designer later as a starting point.", "علامة بسيطة يمكن طباعتها أو تطريزها أو رسمها. ويمكنك لاحقاً تسليمها لمصمم كنقطة بداية.")} />
+      <PanelHeader id="logo-title" title={t("Logo", "الشعار")} subtitle={t("Let your brand partner draw logo ideas for your business, or build a simple letter mark. Either one can go to a designer later as a starting point.", "دع شريك الهوية يرسم أفكار شعارات لمشروعك، أو صمّم علامة بسيطة بالحروف. ويمكنك لاحقاً تسليم أيٍّ منهما لمصمم كنقطة بداية.")} />
+      <LogoConcepts brand={brand} setBrand={setBrand} />
+      <h3 className="brand-sub-title brand-letter-title">{brand.logo.custom ? t("Or go back to a letter mark", "أو عُد إلى علامة الحروف") : t("Or build a letter mark", "أو صمّم علامة بالحروف")}</h3>
       <fieldset className="brand-fieldset">
         <legend className="field-label">{t("Shape", "الشكل")}</legend>
         <div role="radiogroup" aria-label={t("Shape", "الشكل")} className="shape-grid">
           {logoShapes.map((s) => (
-            <button key={s} type="button" role="radio" aria-checked={brand.logo.shape === s} className={clsx("shape-card", brand.logo.shape === s && "is-on")} onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, shape: s } }))}>
+            <button key={s} type="button" role="radio" aria-checked={brand.logo.shape === s && !brand.logo.custom} className={clsx("shape-card", brand.logo.shape === s && !brand.logo.custom && "is-on")} onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, shape: s, custom: undefined } }))}>
               <LogoMark logo={{ ...brand.logo, shape: s }} colors={brand.colors} size={48} />
               <span>{shapeName[s]}</span>
             </button>
@@ -250,14 +253,14 @@ function LogoPanel({ brand, setBrand }: { brand: Brand; setBrand: (fn: (b: Brand
         <Field label={t("Letters in the mark", "حروف العلامة")} hint={t("Up to three. Arabic or English.", "حتى ثلاثة أحرف، عربية أو إنجليزية.")}>
           {(f) => (
             <div className="mark-input">
-              <Input id={f.id} aria-describedby={f.describedBy} value={brand.logo.mark} onChange={(e) => setBrand((b) => ({ ...b, logo: { ...b.logo, mark: [...e.target.value].slice(0, 3).join("") } }))} />
-              {fromName && fromName !== brand.logo.mark && <Button size="sm" variant="ghost" onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, mark: fromName } }))}>{t(`Use “${fromName}”`, `استخدم «${fromName}»`)}</Button>}
+              <Input id={f.id} aria-describedby={f.describedBy} value={brand.logo.mark} onChange={(e) => setBrand((b) => ({ ...b, logo: { ...b.logo, mark: [...e.target.value].slice(0, 3).join(""), custom: undefined } }))} />
+              {fromName && fromName !== brand.logo.mark && <Button size="sm" variant="ghost" onClick={() => setBrand((b) => ({ ...b, logo: { ...b.logo, mark: fromName, custom: undefined } }))}>{t(`Use “${fromName}”`, `استخدم «${fromName}»`)}</Button>}
             </div>
           )}
         </Field>
         <div className="field">
           <span className="field-label" id="lettering-label">{t("Lettering", "نوع الخط")}</span>
-          <Segmented label={t("Lettering", "نوع الخط")} value={brand.logo.font} onChange={(font) => setBrand((b) => ({ ...b, logo: { ...b.logo, font } }))}
+          <Segmented label={t("Lettering", "نوع الخط")} value={brand.logo.font} onChange={(font) => setBrand((b) => ({ ...b, logo: { ...b.logo, font, custom: undefined } }))}
             options={[{ value: "sans", label: t("Clean", "بسيط") }, { value: "serif", label: t("Classic", "كلاسيكي") }, { value: "heavy", label: t("Bold", "عريض") }]} />
         </div>
         <div className="field">
