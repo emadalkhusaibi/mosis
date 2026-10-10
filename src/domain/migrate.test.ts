@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { migrate } from "./migrate";
-import { balance, available } from "./state";
+import { balance, available, emptyState } from "./state";
 
 describe("migrate", () => {
   it("converts a v2 workspace to exact baisa", () => {
@@ -21,6 +21,16 @@ describe("migrate", () => {
     expect(available(s!)).toBe(100);
     expect(s!.finance.price).toBe(2500);
     expect(s!.learning.completed).toEqual(["cash"]);
+    expect(s!.finance.capacity).toBeNull();
+  });
+  it("upgrades v3 and keeps the founder's data", () => {
+    const v3 = { ...emptyState(), version: 3, finance: { ...emptyState().finance, capacity: 0 }, answers: { problem: "Late-night study space" } } as Record<string, unknown>;
+    delete v3.assumptions; delete v3.tests; delete v3.revisions; delete v3.reviews;
+    const s = migrate(v3);
+    expect(s?.version).toBe(4);
+    expect(s?.finance.capacity).toBeNull();
+    expect(s?.answers.problem).toBe("Late-night study space");
+    expect(migrate({ ...v3, finance: { ...emptyState().finance, capacity: 450 } })?.finance.capacity).toBe(450);
   });
   it("converts concept state", () => {
     const s = migrate({

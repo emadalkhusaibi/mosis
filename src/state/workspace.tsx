@@ -100,6 +100,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const schedule = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
     if (modeRef.current === "guest") {
+      // "Saved on this device" appears only once the browser has accepted the write.
+      setStatus("saving");
       timer.current = setTimeout(() => setStatus(writeGuest(latest.current) ? "local" : "error"), 250);
     } else {
       setStatus("saving");
@@ -156,13 +158,21 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     };
   }, [session.isPending, session.data?.user, loadAccount]);
 
-  // Flush guest writes when the tab is hidden so nothing is lost on close.
+  // Flush pending guest writes when the tab is hidden or closed so nothing is lost.
   useEffect(() => {
     const flush = () => {
-      if (document.visibilityState === "hidden" && modeRef.current === "guest") writeGuest(latest.current);
+      if (modeRef.current !== "guest" || !timer.current) return;
+      clearTimeout(timer.current);
+      timer.current = null;
+      setStatus(writeGuest(latest.current) ? "local" : "error");
     };
-    document.addEventListener("visibilitychange", flush);
-    return () => document.removeEventListener("visibilitychange", flush);
+    const onHide = () => { if (document.visibilityState === "hidden") flush(); };
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", flush);
+    };
   }, []);
 
   const update = useCallback(
@@ -200,7 +210,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       user,
       update,
       replace,
-      retry: () => void pushToServer(),
+      retry: () => {
+        if (modeRef.current === "guest") setStatus(writeGuest(latest.current) ? "local" : "error");
+        else void pushToServer();
+      },
       reloadFromServer: async () => {
         setStatus("loading");
         try {

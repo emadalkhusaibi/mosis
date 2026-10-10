@@ -10,7 +10,6 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { Field, Input, TextArea } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
-import { Origin } from "@/components/ui/origin";
 import { sectors } from "@/content/sectors";
 import { newId, type State } from "@/domain/state";
 import { planProgress } from "@/domain/progress";
@@ -20,7 +19,8 @@ const blank = (): Client => ({ id: newId(), name: "", business: "", sector: "caf
 
 export default function ConsultantPage() {
   const { t, p, date } = useI18n();
-  const { state, update } = useWorkspace();
+  const ws = useWorkspace();
+  const { state, update } = ws;
   const toast = useToast();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "open" | "reviewed">("all");
@@ -56,68 +56,67 @@ export default function ConsultantPage() {
   return (
     <>
       <PageHeader
-        eyebrow={t("Consultant desk", "مكتب المستشار")}
-        title={t("Guide founders with *structure*.", "أرشد المؤسسين *بمنهجية*.")}
-        description={t("Keep client notes, score evidence, economics and operations, and plan sessions.", "احتفظ بملاحظات العملاء، وقيّم الأدلة والاقتصاديات والتشغيل، وخطط للجلسات.")}
+        title={t("Consultant desk", "مكتب المستشار")}
+        description={t("For advisers: keep client notes, review evidence, economics and operations, and plan sessions.", "للمستشارين: احتفظ بملاحظات العملاء، وراجع الأدلة والاقتصاديات والتشغيل، وخطط للجلسات.")}
         action={<Button icon={<Plus size={18} weight="bold" />} onClick={() => setEditing(blank())}>{t("New client", "عميل جديد")}</Button>}
       />
-      <p className="privacy-note"><Lock size={15} />{t("These records are private to your account. Shared, multi-person consulting isn't available yet.", "هذه السجلات خاصة بحسابك. الاستشارة المشتركة بين عدة أشخاص غير متاحة بعد.")}</p>
+      <p className="notice"><Lock size={16} aria-hidden="true" /><span>{ws.mode === "account" ? t("Saved to your account and private to you. Sharing with other people isn't available.", "محفوظة في حسابك وخاصة بك. المشاركة مع أشخاص آخرين غير متاحة.") : t("Stored on this device only. Sharing with other people isn't available.", "مخزّنة على هذا الجهاز فقط. المشاركة مع أشخاص آخرين غير متاحة.")}</span></p>
 
       <div className="consult-layout">
         <Panel className="consult-list">
           <div className="activity-tools">
-            <label className="search-field"><MagnifyingGlass size={18} aria-hidden="true" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search clients", "ابحث في العملاء")} aria-label={t("Search clients", "ابحث في العملاء")} /></label>
+            <label className="search-input"><MagnifyingGlass size={18} aria-hidden="true" /><input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search clients", "ابحث في العملاء")} aria-label={t("Search clients", "ابحث في العملاء")} /></label>
           </div>
-          <Segmented size="sm" label={t("Filter", "تصفية")} value={filter} onChange={setFilter} options={[{ value: "all", label: t("All", "الكل") }, { value: "open", label: t("To review", "للمراجعة") }, { value: "reviewed", label: t("Reviewed", "تمت المراجعة") }]} className="mb-2" />
+          <Segmented size="sm" label={t("Filter", "تصفية")} value={filter} onChange={setFilter} options={[{ value: "all", label: t("All", "الكل") }, { value: "open", label: t("To review", "للمراجعة") }, { value: "reviewed", label: t("Reviewed", "تمت المراجعة") }]} />
           {clients.length ? (
             <ul className="list">
               {clients.map((c) => (
                 <li key={c.id}>
-                  <button type="button" className={clsx("row", c.id === selected && "is-current")} onClick={() => setSelected(c.id)} aria-current={c.id === selected}>
-                    <span className="row-icon"><UserCircle size={20} /></span>
-                    <span className="row-main"><span className="row-title">{c.name}</span><span className="row-sub">{c.business || "—"}</span></span>
-                    {c.reviewed && <span className="chip chip-positive"><Check size={12} weight="bold" /></span>}
+                  <button type="button" className={clsx("row row-pad", c.id === selected && "is-current")} onClick={() => setSelected(c.id)} aria-pressed={c.id === selected}>
+                    <span className="row-icon"><UserCircle size={20} aria-hidden="true" /></span>
+                    <span className="row-main"><span className="row-title"><bdi>{c.name}</bdi></span><span className="row-sub"><bdi>{c.business || "—"}</bdi></span></span>
+                    {c.reviewed && <span className="chip chip-positive"><Check size={12} weight="bold" aria-hidden="true" />{t("Reviewed", "رُوجع")}</span>}
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="empty">
-              <Origin className="empty-mark" />
               <p>{state.clients.length ? t("No clients match.", "لا يوجد عملاء مطابقون.") : t("No clients yet.", "لا يوجد عملاء بعد.")}</p>
               {!state.clients.length && <Button variant="secondary" size="sm" onClick={reviewSelf}>{t("Review my own business first", "راجع مشروعي أولاً")}</Button>}
             </div>
           )}
-          <p className="muted small mt-3">{t(`${upcoming} upcoming sessions`, `${upcoming} جلسات قادمة`)}</p>
+          <p className="field-hint">{t(`${upcoming} upcoming sessions`, `${upcoming} جلسات قادمة`)}</p>
         </Panel>
 
         {current ? (
           <div className="consult-detail">
             <Panel>
-              <PanelHeader title={current.name} subtitle={`${current.business} · ${p(sectors.find((s) => s.id === current.sector)?.name ?? sectors[sectors.length - 1].name)}`}
-                action={<div className="flex gap-2"><Button variant="secondary" size="sm" onClick={() => setEditing(current)}>{t("Edit", "تعديل")}</Button><IconButton label={t("Delete client", "حذف العميل")} size="sm" onClick={() => { const c = current; update((s) => ({ ...s, clients: s.clients.filter((x) => x.id !== c.id), sessions: s.sessions.filter((x) => x.clientId !== c.id) })); setSelected(null); toast({ message: t("Client deleted", "تم حذف العميل") }); }}><Trash size={16} /></IconButton></div>} />
+              <PanelHeader title={<bdi>{current.name}</bdi>} subtitle={`${current.business} · ${p(sectors.find((s) => s.id === current.sector)?.name ?? sectors[sectors.length - 1].name)}`}
+                action={<div className="flex gap-2"><Button variant="secondary" size="sm" onClick={() => setEditing(current)}>{t("Edit", "تعديل")}</Button><IconButton label={t("Delete client", "حذف العميل")} size="sm" onClick={() => { const c = current; const prev = { clients: state.clients, sessions: state.sessions }; update((s) => ({ ...s, clients: s.clients.filter((x) => x.id !== c.id), sessions: s.sessions.filter((x) => x.clientId !== c.id) })); setSelected(null); toast({ message: t("Client deleted", "تم حذف العميل"), action: { label: t("Undo", "تراجع"), run: () => { update((s) => ({ ...s, ...prev })); setSelected(c.id); } } }); }}><Trash size={16} /></IconButton></div>} />
+              <p className="field-hint">{t("Scores are review dimensions from 1 to 5, not a prediction of success. Explain them in the written review.", "الدرجات أبعاد مراجعة من ١ إلى ٥، وليست تنبؤاً بالنجاح. اشرحها في المراجعة المكتوبة.")}</p>
               <div className="scores">
                 {([["evidence", t("Customer evidence", "أدلة العملاء")], ["economics", t("Unit economics", "اقتصاديات الوحدة")], ["operations", t("Operational readiness", "الجاهزية التشغيلية")]] as const).map(([k, label]) => (
                   <div key={k} className="score">
                     <span className="field-label">{label}</span>
                     <div className="score-dots" role="radiogroup" aria-label={label}>
-                      {[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" role="radio" aria-checked={current[k] === n} aria-label={`${n}/5`} className={clsx("score-dot", current[k] >= n && "is-on")} onClick={() => patch({ [k]: n } as Partial<Client>)} />)}
+                      {[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" role="radio" aria-checked={current[k] === n} aria-label={`${label}: ${n} / 5`} className={clsx("score-dot", current[k] >= n && "is-on")} onClick={() => patch({ [k]: n } as Partial<Client>)} />)}
                     </div>
                   </div>
                 ))}
               </div>
-              <Field label={t("Notes", "ملاحظات")} className="mt-5">{(f) => <TextArea id={f.id} rows={3} value={current.notes} onChange={(e) => patch({ notes: e.target.value })} maxLength={4000} />}</Field>
-              <Field label={t("Written review", "المراجعة المكتوبة")} className="mt-4" hint={t("Strengths, the biggest open risk, and one next experiment.", "نقاط القوة، وأكبر خطر قائم، وتجربة تالية واحدة.")}>{(f) => <TextArea id={f.id} aria-describedby={f.describedBy} rows={4} value={current.review} onChange={(e) => patch({ review: e.target.value })} maxLength={4000} />}</Field>
-              <label className="toggle-row mt-4"><span className="min-w-0 flex-1"><strong>{t("Review complete", "اكتملت المراجعة")}</strong></span><input type="checkbox" className="switch" checked={current.reviewed} onChange={(e) => patch({ reviewed: e.target.checked })} /></label>
+              <Field label={t("Notes", "ملاحظات")}>{(f) => <TextArea id={f.id} rows={3} value={current.notes} onChange={(e) => patch({ notes: e.target.value })} maxLength={4000} />}</Field>
+              <Field label={t("Written review", "المراجعة المكتوبة")} hint={t("Strengths, the biggest open risk, and one next experiment.", "نقاط القوة، وأكبر خطر قائم، وتجربة تالية واحدة.")}>{(f) => <TextArea id={f.id} aria-describedby={f.describedBy} rows={4} value={current.review} onChange={(e) => patch({ review: e.target.value })} maxLength={4000} />}</Field>
+              <label className="toggle-row"><span className="reserve-toggle-text"><strong>{t("Review complete", "اكتملت المراجعة")}</strong></span><input type="checkbox" role="switch" className="switch" checked={current.reviewed} onChange={(e) => patch({ reviewed: e.target.checked })} /></label>
             </Panel>
             <Panel>
               <PanelHeader title={t("Sessions", "الجلسات")} />
               <ul className="tasks">
                 {sessions.map((s) => (
                   <li key={s.id} className={clsx("task", s.done && "is-done")}>
-                    <button type="button" role="checkbox" aria-checked={s.done} className="task-check" aria-label={s.agenda} onClick={() => update((st) => ({ ...st, sessions: st.sessions.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)) }))}>{s.done && <Check size={12} weight="bold" />}</button>
-                    <span className="task-title">{s.agenda}<span className="task-due">{date(s.date, "long")}</span></span>
-                    <IconButton label={t("Delete", "حذف")} size="sm" onClick={() => update((st) => ({ ...st, sessions: st.sessions.filter((x) => x.id !== s.id) }))}><Trash size={15} /></IconButton>
+                    <input type="checkbox" className="task-check" checked={s.done} aria-label={s.agenda} onChange={() => update((st) => ({ ...st, sessions: st.sessions.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)) }))} />
+                    <span className="task-main"><span className="task-title"><bdi>{s.agenda}</bdi></span><span className="field-hint">{date(s.date, "long")}</span></span>
+                    <IconButton label={t(`Delete ${s.agenda}`, `حذف ${s.agenda}`)} size="sm" onClick={() => update((st) => ({ ...st, sessions: st.sessions.filter((x) => x.id !== s.id) }))}><Trash size={16} /></IconButton>
                   </li>
                 ))}
               </ul>
@@ -129,14 +128,14 @@ export default function ConsultantPage() {
             </Panel>
           </div>
         ) : (
-          <Panel className="consult-detail empty"><Origin className="empty-mark" /><p>{t("Select a client to see their review.", "اختر عميلاً لرؤية مراجعته.")}</p></Panel>
+          <Panel className="consult-detail empty"><p>{t("Select a client to see their review.", "اختر عميلاً لرؤية مراجعته.")}</p></Panel>
         )}
       </div>
 
       <Sheet open={Boolean(editing)} onOpenChange={(o) => !o && setEditing(null)} title={editing && state.clients.some((c) => c.id === editing.id) ? t("Edit client", "تعديل العميل") : t("New client", "عميل جديد")}
         footer={<><Button variant="secondary" onClick={() => setEditing(null)}>{t("Cancel", "إلغاء")}</Button><Button onClick={() => editing && save(editing)} disabled={!editing?.name.trim()}>{t("Save client", "حفظ العميل")}</Button></>}>
         {editing && (
-          <form className="sheet-form" onSubmit={(e) => { e.preventDefault(); save(editing); }}>
+          <form className="form-stack" onSubmit={(e) => { e.preventDefault(); save(editing); }}>
             <Field label={t("Founder name", "اسم المؤسس")}>{(f) => <Input id={f.id} value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} maxLength={100} autoFocus />}</Field>
             <Field label={t("Business", "المشروع")}>{(f) => <Input id={f.id} value={editing.business} onChange={(e) => setEditing({ ...editing, business: e.target.value })} maxLength={120} />}</Field>
             <Field label={t("Sector", "القطاع")}>{(f) => <select id={f.id} className="input" value={editing.sector} onChange={(e) => setEditing({ ...editing, sector: e.target.value })}>{sectors.map((s) => <option key={s.id} value={s.id}>{p(s.name)}</option>)}</select>}</Field>

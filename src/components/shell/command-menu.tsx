@@ -2,9 +2,9 @@
 import { Dialog } from "radix-ui";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { BookOpenText, Gear, MagnifyingGlass, Notebook, Strategy, Users, type Icon } from "@phosphor-icons/react";
+import { BookOpenText, MagnifyingGlass, Notebook, Strategy, type Icon } from "@phosphor-icons/react";
 import { useI18n } from "@/lib/i18n";
-import { nav } from "./nav";
+import { primaryNav, workspaceNav } from "./nav";
 import { sections } from "@/content/sections";
 import { lessons } from "@/content/lessons";
 import { scenarios } from "@/content/scenarios";
@@ -21,12 +21,10 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
     const L = (en: string, ar: string) => (lang === "ar" ? ar : en);
     const A = (en: string, ar: string) => (lang === "ar" ? en : ar);
     return [
-      ...nav.map((n) => ({ href: n.href, label: L(n.en, n.ar), alt: A(n.en, n.ar), group: t("Pages", "الصفحات"), icon: n.icon })),
-      { href: "/practice/team", label: L("Practice team", "الفريق التدريبي"), alt: A("Practice team", "الفريق التدريبي"), group: t("Pages", "الصفحات"), icon: Users },
-      { href: "/settings", label: L("Settings", "الإعدادات"), alt: A("Settings", "الإعدادات"), group: t("Pages", "الصفحات"), icon: Gear },
+      ...[...primaryNav, ...workspaceNav].map((n) => ({ href: n.href, label: L(n.en, n.ar), alt: A(n.en, n.ar), group: t("Pages", "الصفحات"), icon: n.icon })),
       ...sections.map((s) => ({ href: `/plan/${s.id}`, label: L(...s.name), alt: A(...s.name), group: t("Business plan", "خطة العمل"), icon: Notebook })),
       ...lessons.map((l) => ({ href: `/learn/${l.id}`, label: L(...l.title), alt: A(...l.title), group: t("Lessons", "الدروس"), icon: BookOpenText })),
-      ...scenarios.map((s) => ({ href: `/practice/${s.id}`, label: L(...s.title), alt: A(...s.title), group: t("CEO practice", "تدريب القيادة"), icon: Strategy })),
+      ...scenarios.map((s) => ({ href: `/practice/${s.id}`, label: L(...s.title), alt: A(...s.title), group: t("Practice", "التدريب"), icon: Strategy })),
     ];
   }, [lang, t]);
 
@@ -44,7 +42,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
   return (
     <Dialog.Root open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setQ(""); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="sheet-scrim" />
+        <Dialog.Overlay className="dialog-scrim" />
         <Dialog.Content className="command" dir={dir} aria-describedby={undefined}>
           <Dialog.Title className="sr-only">{t("Search your workspace", "ابحث في مساحة عملك")}</Dialog.Title>
           <div className="command-input">
