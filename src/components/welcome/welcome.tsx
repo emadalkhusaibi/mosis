@@ -192,7 +192,7 @@ function ExampleForecast() {
         <span className="w-forecast-title">{t("Cash, 12 months", "النقد، ١٢ شهراً")}</span>
         <span className="w-tag">{t("Simulation", "محاكاة")}</span>
       </div>
-      <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-spark" dir="ltr">
+      <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-spark" aria-hidden="true">
         <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
       </svg>
       <div className="w-forecast-row">

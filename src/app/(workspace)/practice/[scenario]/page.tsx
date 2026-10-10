@@ -1,10 +1,8 @@
 "use client";
 import Link from "next/link";
-import { Morph } from "@/components/ui/morph";
 import { notFound, useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Lightbulb } from "@phosphor-icons/react";
+import { useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
@@ -12,9 +10,11 @@ import { useToast } from "@/components/ui/toast";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
+import { Field, TextArea } from "@/components/ui/field";
 import { scenarios } from "@/content/scenarios";
 import { sectorOf } from "@/content/sectors";
-import { available, newId } from "@/domain/state";
+import { available } from "@/domain/state";
+import { commitDecision } from "@/domain/decisions";
 
 export default function ScenarioPage() {
   const { scenario } = useParams<{ scenario: string }>();
@@ -22,7 +22,7 @@ export default function ScenarioPage() {
 }
 
 function Scenario({ id }: { id: string }) {
-  const { t, p } = useI18n();
+  const { t, p, date } = useI18n();
   const router = useRouter();
   const toast = useToast();
   const { state, update } = useWorkspace();
@@ -31,77 +31,97 @@ function Scenario({ id }: { id: string }) {
   const [choice, setChoice] = useState<number | null>(record?.choice ?? null);
   const [reflection, setReflection] = useState(record?.reflection ?? "");
   const [error, setError] = useState<string | null>(null);
+  const committing = useRef(false);
   if (idx < 0) notFound();
   const sc = scenarios[idx];
   const next = scenarios.find((s, i) => i > idx && !state.decisions.some((d) => d.id === s.id));
   const sector = sectorOf(state.venture.sector);
   const costOf = (c: number) => Math.round(state.venture.capital * c);
+  const now = available(state);
+  const previewCost = choice === null ? 0 : record ? 0 : costOf(sc.options[choice].cost);
+  const after = now - previewCost;
 
   const commit = () => {
-    if (choice === null) return;
-    const cost = costOf(sc.options[choice].cost);
-    if (!record && cost > available(state)) return setError(t("This option costs more than your available funds. Release reserve or choose another option.", "هذا الخيار يكلّف أكثر من أموالك المتاحة. حرّر جزءاً من الاحتياطي أو اختر خياراً آخر."));
-    const ok = update((s) => {
-      const decisions = [...s.decisions.filter((d) => d.id !== id), { id, choice, reflection: reflection.trim(), date: new Date().toISOString() }];
-      // Only the first decision records a cost, so revisiting a scenario never double-charges.
-      const entries = !record && cost > 0 ? [{ id: newId(), title: p(sc.options[choice].title), amount: -cost, category: "practice" as const, date: new Date().toISOString() }, ...s.entries] : s.entries;
-      return { ...s, decisions, entries };
-    });
-    if (!ok) return setError(t("That decision couldn't be saved.", "تعذّر حفظ القرار."));
-    toast({ message: record ? t("Reflection updated", "تم تحديث التأمل") : t("Decision recorded · +100 XP", "تم تسجيل القرار · +١٠٠ نقطة") });
-    if (!record && next) router.push(`/practice/${next.id}`);
-    else if (!record) router.push("/practice");
+    if (choice === null || committing.current) return;
+    committing.current = true;
+    const r = commitDecision(state, { scenarioId: id, choice, options: sc.options.length, reflection, cost: costOf(sc.options[choice].cost), title: p(sc.options[choice].title) });
+    if (!r.ok) {
+      committing.current = false;
+      return setError(r.error === "insufficient_funds" ? t("This option costs more than you can spend. Lower your reserve in the wallet or choose another option.", "هذا الخيار يكلّف أكثر مما يمكنك إنفاقه. خفّض الاحتياطي من المحفظة أو اختر خياراً آخر.") : t("Choose one of the options.", "اختر أحد الخيارات."));
+    }
+    if (r.state !== state && !update(() => r.state)) {
+      committing.current = false;
+      return setError(t("That decision couldn't be saved.", "تعذّر حفظ القرار."));
+    }
+    committing.current = false;
+    if (r.replayed) return toast({ message: t("Reflection saved", "تم حفظ التأمل") });
+    toast({ message: t("Decision committed", "تم اعتماد القرار") });
+    router.push(next ? `/practice/${next.id}` : "/practice");
   };
 
   return (
     <div className="scenario">
       <nav className="crumbs" aria-label={t("Breadcrumb", "مسار التنقل")}>
-        <Link href="/practice"><ArrowLeft size={15} className="flip-rtl" />{t("CEO practice", "تدريب القيادة")}</Link>
+        <Link href="/practice" className="link-quiet small"><ArrowLeft size={14} className="flip-rtl inline-icon" aria-hidden="true" /> {t("Practice", "التدريب")}</Link>
       </nav>
-      <header className="page-header">
-        <div className="min-w-0">
-          <p className="eyebrow">{state.venture.name} · {p(sector.name)}</p>
-          <h1 className="page-title"><Morph name={`scenario-${sc.id}`} kind="morph-text"><span className="vt-text">{p(sc.title)}</span></Morph></h1>
+      <header className="page-heading">
+        <div className="page-heading-text">
+          <p className="page-kicker">{record ? t(`Decided ${date(record.date, "long")}`, `حُسم في ${date(record.date, "long")}`) : t(`Scenario ${idx + 1} of ${scenarios.length}`, `الموقف ${idx + 1} من ${scenarios.length}`)}</p>
+          <h1 className="page-title">{p(sc.title)}</h1>
           <p className="page-description">{p(sc.intro)}</p>
         </div>
       </header>
 
       <div className="scenario-layout">
-        <div className="options" role="radiogroup" aria-label={t("Your options", "خياراتك")}>
-          {sc.options.map((o, i) => (
-            <button key={i} type="button" role="radio" aria-checked={choice === i} disabled={Boolean(record)} className={clsx("option panel", choice === i && "is-selected")} onClick={() => { setChoice(i); setError(null); }}>
-              <span className="option-head">
-                <span className="option-radio">{choice === i && <Check size={12} weight="bold" />}</span>
-                <span className="option-title">{p(o.title)}</span>
-                <span className="option-cost">{o.cost ? <Money value={-costOf(o.cost)} /> : t("No cost", "بلا تكلفة")}</span>
-              </span>
-              <span className="option-detail">{p(o.detail)}</span>
-            </button>
-          ))}
+        <div className="scenario-main">
+          <dl className="scenario-facts" aria-label={t("Your business facts", "حقائق مشروعك")}>
+            <div><dt>{t("Business", "المشروع")}</dt><dd><bdi>{state.venture.name}</bdi> · {p(sector.name)}</dd></div>
+            <div><dt>{t("Available to spend", "المتاح للإنفاق")}</dt><dd><Money value={now} /></dd></div>
+            <div><dt>{t("Fixed costs", "التكاليف الثابتة")}</dt><dd><Money value={state.finance.fixed} /> {t("a month", "شهرياً")}</dd></div>
+          </dl>
+
+          <fieldset className="options">
+            <legend className="section-title">{record ? t("Your decision", "قرارك") : t("Choose an option", "اختر خياراً")}</legend>
+            <p className="field-hint">{record ? t("Committed decisions keep the option you chose. You can still update your reflection.", "تحتفظ القرارات المعتمدة بالخيار المختار. يمكنك تحديث تأملك.") : t("Selecting only previews the trade-off. Nothing is charged until you commit.", "الاختيار يعرض المفاضلة فقط. لا يُخصم شيء حتى تعتمد القرار.")}</p>
+            <div role="radiogroup" aria-label={t("Options", "الخيارات")} className="options-list">
+              {sc.options.map((o, i) => {
+                const selected = choice === i;
+                return (
+                  <button key={i} type="button" role="radio" aria-checked={selected} disabled={Boolean(record) && !selected} className={clsx("option", selected && "is-selected")} onClick={() => { if (!record) { setChoice(i); setError(null); } }}>
+                    <span className="option-head">
+                      <span className="option-radio" aria-hidden="true">{selected && <Check size={12} weight="bold" />}</span>
+                      <span className="option-title">{p(o.title)}</span>
+                      <span className="option-cost">{o.cost ? <Money value={-costOf(o.cost)} signed /> : t("No cost", "بلا تكلفة")}</span>
+                    </span>
+                    <span className="option-detail">{p(o.detail)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
         </div>
 
         <div className="scenario-side">
-          <AnimatePresence mode="wait">
-            {choice !== null ? (
-              <motion.div key={choice} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <Panel className="consequence">
-                  <span className="guide-icon"><Lightbulb size={18} /></span>
-                  <h2 className="panel-title text-base">{t("The trade-off", "المقايضة")}</h2>
-                  <p>{p(sc.options[choice].lesson)}</p>
-                </Panel>
-              </motion.div>
-            ) : (
-              <Panel className="consequence is-empty"><p className="muted">{t("Choose an option to see what it trades off.", "اختر خياراً لترى ما يقايضه.")}</p></Panel>
+          <Panel aria-live="polite">
+            <PanelHeader level={2} title={t("The trade-off", "المفاضلة")} />
+            {choice !== null ? <p className="secondary">{p(sc.options[choice].lesson)}</p> : <p className="field-hint">{t("Choose an option to see what it trades off.", "اختر خياراً لترى ما يقايضه.")}</p>}
+            {choice !== null && !record && (
+              <dl className="balance-list impact">
+                <div><dt>{t("Available now", "المتاح الآن")}</dt><dd><Money value={now} /></dd></div>
+                <div><dt>{t("This option", "هذا الخيار")}</dt><dd><Money value={-previewCost} signed /></dd></div>
+                <div className="is-strong"><dt>{t("Available after", "المتاح بعده")}</dt><dd><Money value={after} tone={after < 0} /></dd></div>
+              </dl>
             )}
-          </AnimatePresence>
+          </Panel>
           <Panel>
-            <PanelHeader level={3} title={t("Your reflection", "تأملك")} subtitle={t("What would you watch for? What would change your mind?", "ما الذي ستراقبه؟ وما الذي سيغيّر رأيك؟")} />
-            <textarea className="input textarea" rows={4} maxLength={4000} value={reflection} onChange={(e) => setReflection(e.target.value)} aria-label={t("Your reflection", "تأملك")} />
-            {error && <p className="field-error mt-2" role="alert">{error}</p>}
-            <div className="mt-4 flex flex-wrap gap-3">
+            <Field label={t("Your reflection", "تأملك")} optional hint={t("What would you watch for? What would change your mind?", "ما الذي ستراقبه؟ وما الذي سيغيّر رأيك؟")}>
+              {(f) => <TextArea id={f.id} aria-describedby={f.describedBy} rows={4} maxLength={4000} value={reflection} onChange={(e) => setReflection(e.target.value)} />}
+            </Field>
+            {error && <p className="notice notice-danger scenario-error" role="alert">{error}</p>}
+            <div className="scenario-actions">
               <Button onClick={commit} disabled={choice === null} trailing={!record ? <ArrowRight size={18} /> : undefined}>{record ? t("Save reflection", "حفظ التأمل") : t("Commit decision", "اعتمد القرار")}</Button>
             </div>
-            <p className="muted small mt-3">{t("Committing records the option's cost in your wallet as a practice expense.", "اعتماد القرار يسجّل تكلفة الخيار في محفظتك كمصروف تدريبي.")}</p>
+            {!record && <p className="field-hint">{t("Committing records one decision and, if the option has a cost, one practice expense in your wallet.", "الاعتماد يسجّل قراراً واحداً، ومصروفاً تدريبياً واحداً في محفظتك إن كان للخيار تكلفة.")}</p>}
           </Panel>
         </div>
       </div>

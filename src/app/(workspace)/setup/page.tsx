@@ -23,31 +23,41 @@ const capitalPresets = [5_000, 10_000, 25_000, 50_000].map(toBaisa);
 type Draft = { step: number; founder: string; name: string; sector: string; other: string; stage: Stage; idea: string; city: string; capital: Baisa | null; protect: boolean };
 
 export default function SetupPage() {
+  const ws = useWorkspace();
+  // The form starts from the saved profile, so wait until the workspace has loaded.
+  if (!ws.ready) return <div className="setup" aria-busy="true" />;
+  return <SetupForm />;
+}
+
+function readDraft(): Partial<Draft> | null {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null") as Draft | null;
+    return saved && typeof saved.step === "number" ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function SetupForm() {
   const { t, p, number } = useI18n();
   const router = useRouter();
   const ws = useWorkspace();
   const v = ws.state.venture;
   const editing = v.started;
 
-  const [d, setD] = useState<Draft>({ step: 0, founder: v.founder || ws.user?.name || "", name: v.name, sector: v.sector, other: v.other, stage: v.stage, idea: v.idea, city: v.city || "Muscat", capital: v.capital, protect: true });
+  // A new setup survives Back and refresh; editing always starts from the saved profile.
+  const [d, setD] = useState<Draft>(() => ({
+    step: 0, founder: v.founder || ws.user?.name || "", name: v.name, sector: v.sector, other: v.other, stage: v.stage, idea: v.idea, city: v.city || "Muscat", capital: v.capital, protect: true,
+    ...(editing ? null : readDraft()),
+  }));
   const [capitalErr, setCapitalErr] = useState<MoneyError | null>(null);
   const [tried, setTried] = useState(false);
   const finishing = useRef(false);
   const form = useRef<HTMLFormElement>(null);
   const set = (patch: Partial<Draft>) => setD((x) => ({ ...x, ...patch }));
 
-  // A new setup survives Back and refresh; editing always starts from the saved profile.
-  const restored = useRef(false);
   useEffect(() => {
-    if (editing || restored.current) return;
-    restored.current = true;
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null") as Draft | null;
-      if (saved && typeof saved.step === "number") setD((x) => ({ ...x, ...saved }));
-    } catch {}
-  }, [editing]);
-  useEffect(() => {
-    if (editing || !restored.current) return;
+    if (editing) return;
     try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch {}
   }, [d, editing]);
 

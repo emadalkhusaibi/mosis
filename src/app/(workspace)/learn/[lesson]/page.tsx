@@ -1,20 +1,23 @@
 "use client";
 import Link from "next/link";
-import { Morph } from "@/components/ui/morph";
-import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
-import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Clock, Lightbulb, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, Check, X } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { useToast } from "@/components/ui/toast";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
+import { SaveIndicator } from "@/components/ui/save-indicator";
 import { lessons, paths } from "@/content/lessons";
-import { pathImages } from "@/content/imagery";
 import { level, ranks } from "@/domain/state";
+
+/** Reading time from the lesson text in the current language (≈200 wpm English, ≈160 wpm Arabic). */
+function readingMinutes(texts: string[], lang: string) {
+  const words = texts.join(" ").trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / (lang === "ar" ? 160 : 200)));
+}
 
 export default function LessonPage() {
   const { lesson } = useParams<{ lesson: string }>();
@@ -28,85 +31,87 @@ function Lesson({ id }: { id: string }) {
   const idx = lessons.findIndex((l) => l.id === id);
   const saved = state.learning.answers[id];
   const [choice, setChoice] = useState<number | null>(saved ?? null);
-  const [checked, setChecked] = useState(saved !== undefined);
+  const [submitted, setSubmitted] = useState(saved !== undefined);
+  const [touched, setTouched] = useState(false);
   if (idx < 0) notFound();
   const l = lessons[idx];
   const next = lessons[idx + 1];
   const completed = state.learning.completed.includes(l.id);
-  const correct = choice === l.answer;
+  const correct = submitted && choice === l.answer;
   const note = state.learning.notes[l.id] ?? "";
+  const read = readingMinutes([...l.body.map(p), p(l.example)], lang);
 
-  const check = () => {
+  const submit = () => {
     if (choice === null) return;
-    setChecked(true);
+    setSubmitted(true);
     update((s) => ({ ...s, learning: { ...s.learning, answers: { ...s.learning.answers, [l.id]: choice } } }));
   };
+  // Completion (and its XP) is recorded once per lesson; repeats change nothing.
   const complete = () => {
+    if (completed) return;
     const before = level(state).index;
-    update((s) => (s.learning.completed.includes(l.id) ? s : { ...s, learning: { ...s.learning, completed: [...s.learning.completed, l.id] } }));
-    const after = level({ ...state, learning: { ...state.learning, completed: [...state.learning.completed, l.id] } }).index;
-    toast({ message: after > before ? t(`Level up: ${ranks[after][0]}`, `مستوى جديد: ${ranks[after][1]}`) : t("Lesson complete · +100 XP", "اكتمل الدرس · +١٠٠ نقطة") });
+    const nextState = { ...state, learning: { ...state.learning, completed: [...state.learning.completed, l.id] } };
+    if (!update((s) => (s.learning.completed.includes(l.id) ? s : { ...s, learning: { ...s.learning, completed: [...s.learning.completed, l.id] } }))) return;
+    const after = level(nextState).index;
+    toast({ message: after > before ? t(`New level: ${ranks[after][0]}`, `مستوى جديد: ${ranks[after][1]}`) : t("Lesson complete", "اكتمل الدرس") });
   };
 
   return (
     <article className="lesson">
       <nav className="crumbs" aria-label={t("Breadcrumb", "مسار التنقل")}>
-        <Link href="/learn"><ArrowLeft size={15} className="flip-rtl" />{t("Learning studio", "استوديو التعلّم")}</Link>
+        <Link href="/learn" className="link-quiet small"><ArrowLeft size={14} className="flip-rtl inline-icon" aria-hidden="true" /> {t("Learn", "تعلّم")}</Link>
       </nav>
-      <header className="lesson-hero">
-        <div className="lesson-hero-art"><Image src={pathImages[l.path]} alt="" fill sizes="(min-width: 900px) 40vw, 100vw" priority /></div>
-        <div className="lesson-hero-copy">
-          <p className="eyebrow">{p(paths[l.path])}</p>
-          <h1 className="page-title"><Morph name={`lesson-${l.id}`} kind="morph-text"><span className="vt-text">{p(l.title)}</span></Morph></h1>
-          <p className="lesson-meta"><Clock size={15} />{t(`${l.minutes} minute read`, `قراءة ${l.minutes} دقائق`)}{completed && <span className="chip chip-positive"><Check size={12} weight="bold" />{t("Completed", "مكتمل")}</span>}</p>
-        </div>
+      <header className="lesson-head">
+        <p className="page-kicker">{p(paths[l.path])} · {t(`Lesson ${idx + 1} of ${lessons.length}`, `الدرس ${idx + 1} من ${lessons.length}`)}</p>
+        <h1 className="page-title">{p(l.title)}</h1>
+        <p className="field-hint">{t(`About ${read} min to read, plus a short check and exercise.`, `نحو ${read} دقائق للقراءة، مع اختبار وتمرين قصيرين.`)}{completed && <> · <span className="chip chip-positive"><Check size={12} weight="bold" aria-hidden="true" />{t("Completed", "مكتمل")}</span></>}</p>
       </header>
 
-      <div className="lesson-body">
-        <div className="prose-block lesson-prose">{l.body.map((para, i) => <p key={i}>{p(para)}</p>)}</div>
+      <div className="lesson-text">{l.body.map((para, i) => <p key={i}>{p(para)}</p>)}</div>
 
-        <Panel className="lesson-example">
-          <span className="guide-icon"><Lightbulb size={18} /></span>
-          <h2 className="panel-title text-base">{t("Example", "مثال")}</h2>
-          <p>{p(l.example)}</p>
-        </Panel>
+      <aside className="lesson-example" aria-label={t("Example", "مثال")}>
+        <p className="suggestion-label">{t("Example", "مثال")}</p>
+        <p>{p(l.example)}</p>
+      </aside>
 
-        <Panel className="quiz">
-          <h2 className="panel-title">{t("Check your understanding", "تحقق من فهمك")}</h2>
-          <p className="quiz-q">{p(l.question)}</p>
-          <div className="quiz-options" role="radiogroup" aria-label={p(l.question)}>
-            {l.options.map((o, i) => {
-              const state = checked ? (i === l.answer ? "is-correct" : i === choice ? "is-wrong" : "") : "";
-              return (
-                <button key={i} type="button" role="radio" aria-checked={choice === i} disabled={checked} className={clsx("quiz-option", choice === i && "is-selected", state)} onClick={() => setChoice(i)}>
-                  <span className="quiz-mark">{checked && i === l.answer ? <Check size={14} weight="bold" /> : checked && i === choice ? <X size={14} weight="bold" /> : (lang === "ar" ? "أبجد" : "ABCD")[i]}</span>
-                  <span>{p(o)}</span>
-                </button>
-              );
-            })}
+      <Panel className="quiz" aria-labelledby="quiz-title">
+        <h2 id="quiz-title" className="section-title">{t("Check your understanding", "تحقق من فهمك")}</h2>
+        <fieldset className="quiz-set" disabled={submitted}>
+          <legend className="quiz-q">{p(l.question)}</legend>
+          {l.options.map((o, i) => {
+            const mark = submitted ? (i === l.answer ? "is-correct" : i === choice ? "is-wrong" : "") : "";
+            return (
+              <label key={i} className={clsx("quiz-option", choice === i && "is-selected", mark)}>
+                <input type="radio" name={`quiz-${l.id}`} checked={choice === i} onChange={() => setChoice(i)} />
+                <span>{p(o)}</span>
+                {submitted && i === l.answer && <Check size={16} weight="bold" className="quiz-icon" aria-label={t("Correct answer", "الإجابة الصحيحة")} />}
+                {submitted && i === choice && i !== l.answer && <X size={16} weight="bold" className="quiz-icon" aria-label={t("Your answer", "إجابتك")} />}
+              </label>
+            );
+          })}
+        </fieldset>
+        {!submitted ? (
+          <Button onClick={submit} disabled={choice === null}>{t("Check answer", "تحقق من الإجابة")}</Button>
+        ) : (
+          <div className={clsx("quiz-feedback", correct ? "is-correct" : "is-wrong")} role="status">
+            <p><strong>{correct ? t("That's right.", "إجابة صحيحة.") : t("Not quite.", "ليس تماماً.")}</strong> {p(l.explanation)}</p>
+            {!correct && <Button variant="secondary" size="sm" onClick={() => { setSubmitted(false); setChoice(null); }}>{t("Try again", "حاول مجدداً")}</Button>}
           </div>
-          {!checked ? (
-            <Button onClick={check} disabled={choice === null}>{t("Check answer", "تحقق من الإجابة")}</Button>
-          ) : (
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={clsx("quiz-feedback", correct ? "is-correct" : "is-wrong")} role="status">
-              <strong>{correct ? t("That's right.", "إجابة صحيحة.") : t("Not quite.", "ليس تماماً.")}</strong> {p(l.explanation)}
-              {!correct && <button type="button" className="link-btn ms-2" onClick={() => { setChecked(false); setChoice(null); }}>{t("Try again", "حاول مجدداً")}</button>}
-            </motion.div>
-          )}
-        </Panel>
+        )}
+      </Panel>
 
-        <Panel>
-          <h2 className="panel-title">{t("Apply it to your business", "طبّقه على مشروعك")}</h2>
-          <label htmlFor="exercise" className="muted block mt-1 mb-3">{p(l.exercise)}</label>
-          <textarea id="exercise" className="input textarea" rows={4} maxLength={4000} value={note} placeholder={t("Your notes stay in your workspace.", "تبقى ملاحظاتك في مساحة عملك.")}
-            onChange={(e) => update((s) => ({ ...s, learning: { ...s.learning, notes: { ...s.learning.notes, [l.id]: e.target.value } } }))} />
-        </Panel>
+      <section className="lesson-exercise" aria-labelledby="exercise-label">
+        <h2 className="section-title">{t("Apply it to your business", "طبّقه على مشروعك")}</h2>
+        <label id="exercise-label" htmlFor="exercise" className="secondary">{p(l.exercise)}</label>
+        <textarea id="exercise" dir="auto" className="input textarea" rows={5} maxLength={4000} value={note} placeholder={t("Your notes stay in your workspace.", "تبقى ملاحظاتك في مساحة عملك.")}
+          onChange={(e) => { setTouched(true); update((s) => ({ ...s, learning: { ...s.learning, notes: { ...s.learning.notes, [l.id]: e.target.value } } })); }} />
+        <SaveIndicator touched={touched} />
+      </section>
 
-        <div className="section-nav">
-          {completed ? <span className="chip chip-positive"><Check size={12} weight="bold" />{t("Lesson complete", "اكتمل الدرس")}</span>
-            : <Button onClick={complete} disabled={!checked || !correct} icon={<Check size={18} weight="bold" />}>{checked && correct ? t("Mark complete", "إكمال الدرس") : t("Answer correctly to complete", "أجب بشكل صحيح للإكمال")}</Button>}
-          {next && <Button variant="ghost" href={`/learn/${next.id}`} trailing={<ArrowRight size={18} />}>{p(next.title)}</Button>}
-        </div>
+      <div className="section-nav">
+        {completed ? <span className="chip chip-positive"><Check size={12} weight="bold" aria-hidden="true" />{t("Lesson complete", "اكتمل الدرس")}</span>
+          : <Button onClick={complete} disabled={!correct} icon={<Check size={18} weight="bold" />}>{correct ? t("Mark complete", "إكمال الدرس") : t("Answer the check to complete", "أجب عن الاختبار للإكمال")}</Button>}
+        {next && <Button variant="ghost" href={`/learn/${next.id}`} trailing={<ArrowRight size={18} />}>{p(next.title)}</Button>}
       </div>
     </article>
   );
