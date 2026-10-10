@@ -6,11 +6,12 @@ import { ArrowLeft, ArrowRight, Check, X } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { useToast } from "@/components/ui/toast";
 import { Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { SaveIndicator } from "@/components/ui/save-indicator";
-import { lessons, paths } from "@/content/lessons";
+import { paths } from "@/content/lessons";
 import { level, ranks } from "@/domain/state";
 
 /** Reading time from the lesson text in the current language (≈200 wpm English, ≈160 wpm Arabic). */
@@ -25,6 +26,7 @@ export default function LessonPage() {
 }
 
 function Lesson({ id }: { id: string }) {
+  const { lessons } = useContent();
   const { t, p, lang } = useI18n();
   const { state, update } = useWorkspace();
   const toast = useToast();
@@ -73,6 +75,13 @@ function Lesson({ id }: { id: string }) {
         <p className="suggestion-label">{t("Example", "مثال")}</p>
         <p>{p(l.example)}</p>
       </aside>
+
+      {l.applied && (
+        <aside className="lesson-applied" aria-label={t("In your business", "في مشروعك")}>
+          <p className="suggestion-label">{t("In your business", "في مشروعك")}</p>
+          <p>{p(l.applied)}</p>
+        </aside>
+      )}
 
       <Panel className="quiz" aria-labelledby="quiz-title">
         <h2 id="quiz-title" className="section-title">{t("Check your understanding", "تحقق من فهمك")}</h2>

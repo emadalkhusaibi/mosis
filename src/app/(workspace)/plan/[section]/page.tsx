@@ -6,17 +6,17 @@ import { ArrowLeft, ArrowRight, BookOpenText, ChartLineUp, Check } from "@phosph
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { Button } from "@/components/ui/button";
 import { SaveIndicator } from "@/components/ui/save-indicator";
-import { sections } from "@/content/sections";
 import { sectionMeta } from "@/content/plan-meta";
-import { lessons } from "@/content/lessons";
 import { sectorOf } from "@/content/sectors";
 import { MIN_ANSWER, answered, planProgress } from "@/domain/progress";
 
 const LIMIT = 4000;
 
 export default function PlanSectionPage() {
+  const { sections, lessons } = useContent();
   const { section } = useParams<{ section: string }>();
   const router = useRouter();
   const { t, p } = useI18n();
@@ -75,9 +75,12 @@ export default function PlanSectionPage() {
               <li key={q.key} className="question">
                 <label htmlFor={id} className="question-label">
                   <span className={clsx("question-n", done && "is-done")} aria-hidden="true">{done ? <Check size={12} weight="bold" /> : qi + 1}</span>
-                  <span>{p(q.label)}{q.optional && <span className="field-optional"> {t("Optional", "اختياري")}</span>}</span>
+                  <span>{p(q.label)}{q.specific ? <span className="field-optional"> {t("For your business", "خاص بمشروعك")}</span> : q.optional && <span className="field-optional"> {t("Optional", "اختياري")}</span>}</span>
                 </label>
-                <p id={`${id}-hint`} className="question-hint">{p(q.hint)}</p>
+                <p id={`${id}-hint`} className="question-hint">
+                  {p(q.hint)}
+                  {q.example && <span className="question-example"><span className="question-example-k">{t("For example", "مثال")}</span> {p(q.example)}</span>}
+                </p>
                 <textarea
                   id={id}
                   aria-describedby={`${id}-hint${short || left <= 400 ? ` ${id}-foot` : ""}`}

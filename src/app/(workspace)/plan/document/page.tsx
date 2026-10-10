@@ -3,10 +3,10 @@ import Link from "next/link";
 import { ArrowLeft, Printer } from "@phosphor-icons/react";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { Origin } from "@/components/ui/origin";
-import { sections } from "@/content/sections";
 import { sectorOf } from "@/content/sectors";
 import { projection } from "@/domain/forecast";
 import { available } from "@/domain/state";
@@ -14,6 +14,7 @@ import { planProgress } from "@/domain/progress";
 
 /** A readable, printable version of the whole plan, built only from saved content. */
 export default function PlanDocumentPage() {
+  const { sections } = useContent();
   const { t, p, date, number } = useI18n();
   const { state } = useWorkspace();
   const v = state.venture;

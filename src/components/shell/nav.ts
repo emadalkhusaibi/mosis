@@ -1,4 +1,4 @@
-import { BookOpenText, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
+import { BookOpenText, PaintBrush, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
 
 export type NavItem = { href: string; en: string; ar: string; icon: Icon; descEn?: string; descAr?: string };
 
@@ -13,6 +13,7 @@ export const primaryNav: NavItem[] = [
 
 /** Everything else, always reachable from the labelled workspace menu, never only from search. */
 export const workspaceNav: NavItem[] = [
+  { href: "/brand", en: "Brand studio", ar: "استوديو الهوية", icon: PaintBrush, descEn: "Name, colours and logo, with an AI partner", descAr: "الاسم والألوان والشعار، مع مساعد ذكي" },
   { href: "/forecast", en: "Forecast", ar: "التوقعات", icon: ChartLineUp, descEn: "Your year under named assumptions", descAr: "سنتك وفق افتراضات مسمّاة" },
   { href: "/practice/team", en: "Practice team", ar: "الفريق التدريبي", icon: Users, descEn: "Planned roles and payroll", descAr: "الأدوار والرواتب المخططة" },
   { href: "/consultant", en: "Consultant desk", ar: "مكتب المستشار", icon: UsersThree, descEn: "A separate mode for reviewing founders", descAr: "وضع منفصل لمراجعة المؤسسين" },

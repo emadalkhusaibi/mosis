@@ -6,12 +6,12 @@ import { ArrowLeft, ArrowRight, Check } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { useToast } from "@/components/ui/toast";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { Field, TextArea } from "@/components/ui/field";
-import { scenarios } from "@/content/scenarios";
 import { sectorOf } from "@/content/sectors";
 import { available } from "@/domain/state";
 import { commitDecision } from "@/domain/decisions";
@@ -22,6 +22,7 @@ export default function ScenarioPage() {
 }
 
 function Scenario({ id }: { id: string }) {
+  const { scenarios } = useContent();
   const { t, p, date } = useI18n();
   const router = useRouter();
   const toast = useToast();

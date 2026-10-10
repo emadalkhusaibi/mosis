@@ -4,14 +4,16 @@ import { ArrowRight, Check } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
-import { lessons, paths } from "@/content/lessons";
+import { paths } from "@/content/lessons";
 import { level, ranks } from "@/domain/state";
 import { nextMove } from "@/domain/progress";
 
 export default function LearnPage() {
+  const { lessons } = useContent();
   const { t, p, lang } = useI18n();
   const { state } = useWorkspace();
   const done = new Set(state.learning.completed);

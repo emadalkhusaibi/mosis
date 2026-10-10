@@ -5,15 +5,13 @@ import { ArrowRight, BookOpenText, Check, Plus, Trash } from "@phosphor-icons/re
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
+import { useContent } from "@/state/content";
 import { useToast } from "@/components/ui/toast";
 import { Panel, PanelHeader } from "@/components/ui/panel";
 import { Button, IconButton } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { categoryMeta } from "@/components/wallet/categories";
 import { sectorOf } from "@/content/sectors";
-import { sections } from "@/content/sections";
-import { lessons } from "@/content/lessons";
-import { scenarios } from "@/content/scenarios";
 import { available, newId, type State } from "@/domain/state";
 import { projection } from "@/domain/forecast";
 import { formatCoverage, reserveCoverage } from "@/domain/reserve";
@@ -56,6 +54,7 @@ export default function TodayPage() {
 
 /** The one recommendation, with the reason it was chosen. */
 function NextDecision({ className }: { className?: string }) {
+  const { sections, lessons, scenarios } = useContent();
   const { t, p } = useI18n();
   const { state: s } = useWorkspace();
   const move = nextMove(s);
@@ -200,6 +199,7 @@ function FieldTask({ className }: { className?: string }) {
 }
 
 function PlanSummary({ className }: { className?: string }) {
+  const { sections } = useContent();
   const { t, p } = useI18n();
   const { state: s } = useWorkspace();
   const plan = planProgress(s);
@@ -224,6 +224,7 @@ function PlanSummary({ className }: { className?: string }) {
 }
 
 function LearnNext({ className }: { className?: string }) {
+  const { lessons } = useContent();
   const { t, p } = useI18n();
   const { state: s } = useWorkspace();
   const lesson = lessons.find((l) => !s.learning.completed.includes(l.id));
@@ -244,6 +245,7 @@ function LearnNext({ className }: { className?: string }) {
 }
 
 function Recent({ className, s }: { className?: string; s: State }) {
+  const { scenarios } = useContent();
   const { t, p, date, lang } = useI18n();
   const decisions = [...s.decisions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   const entries = s.entries.slice(0, 3);

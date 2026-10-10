@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { sectors } from "@/content/sectors";
 import { toBaisa, type Baisa } from "@/lib/money";
+import { brandSchema } from "./brand";
 
 const MAX_BAISA = 100_000_000_000; // 100 million rials
 const baisa = z.number().int().min(0).max(MAX_BAISA);
@@ -178,6 +179,8 @@ export const stateSchema = z
     tests: z.array(fieldTestSchema).max(500),
     revisions: z.array(revisionSchema).max(2000),
     reviews: z.array(reviewSchema).max(520),
+    /** Brand studio. Optional so older workspaces load unchanged. */
+    brand: brandSchema.optional(),
   })
   .superRefine((s, ctx) => {
     if (s.reserve > balance(s)) ctx.addIssue({ code: "custom", message: "Reserve exceeds balance", path: ["reserve"] });

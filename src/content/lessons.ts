@@ -11,6 +11,8 @@ export type Lesson = {
   options: Words[];
   answer: number;
   explanation: Words;
+  /** "In your business" paragraph, added by tailor.ts. */
+  applied?: Words;
 };
 export const paths = [
   w("Financial foundations", "الأسس المالية"),
