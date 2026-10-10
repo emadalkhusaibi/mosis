@@ -3,7 +3,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { paletteSchema, safeSvg } from "@/domain/brand";
 import { sectorOf } from "@/content/sectors";
-import { limited, noStore as json, sameOrigin } from "@/server/ai";
+import { anthropicKey, limited, noStore as json, sameOrigin } from "@/server/ai";
 
 export const dynamic = "force-dynamic";
 // Drawing three detailed logos takes a while.
@@ -58,7 +58,8 @@ Write "title" and "idea" in ${b.lang === "ar" ? "Arabic" : "English"}.`;
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "invalid_origin" }, 403);
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: "not_configured" }, 503);
+  const apiKey = anthropicKey();
+  if (!apiKey) return json({ error: "not_configured" }, 503);
   if (limited(request, "logos", 6)) return json({ error: "rate_limited" }, 429);
 
   const raw = await request.text();
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
     return json({ error: "invalid_request" }, 400);
   }
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
   try {
     // Streamed so a long drawing never hits the SDK's request timeout.
     const message = await client.beta.messages
@@ -97,7 +98,8 @@ export async function POST(request: Request) {
     return json({ concepts });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return json({ error: "busy" }, 429);
-    if (error instanceof Anthropic.AuthenticationError) return json({ error: "not_configured" }, 503);
+    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) return json({ error: "key_rejected" }, 503);
+    if (error instanceof Anthropic.BadRequestError && /credit|billing/i.test(error.message)) return json({ error: "no_credit" }, 402);
     if (error instanceof Anthropic.APIError) return json({ error: "upstream" }, 502);
     if (error instanceof SyntaxError) return json({ error: "no_answer" }, 502);
     return json({ error: "failed" }, 500);

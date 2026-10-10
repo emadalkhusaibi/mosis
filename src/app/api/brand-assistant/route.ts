@@ -3,7 +3,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { brandSchema, chatMessageSchema, logoShapes, logoFonts } from "@/domain/brand";
 import { sectorOf } from "@/content/sectors";
-import { limited, noStore as json, sameOrigin } from "@/server/ai";
+import { anthropicKey, limited, noStore as json, sameOrigin } from "@/server/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +67,8 @@ How to help
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "invalid_origin" }, 403);
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: "not_configured" }, 503);
+  const apiKey = anthropicKey();
+  if (!apiKey) return json({ error: "not_configured" }, 503);
 
   if (limited(request, "chat", 20)) return json({ error: "rate_limited" }, 429);
 
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
   while (turns.length && turns[0].role !== "user") turns.shift();
   if (!turns.length || turns[turns.length - 1].role !== "user") return json({ error: "invalid_request" }, 400);
 
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
   try {
     const response = await client.beta.messages.parse({
       model: "claude-opus-5-5",
@@ -109,7 +110,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return json({ error: "busy" }, 429);
-    if (error instanceof Anthropic.AuthenticationError) return json({ error: "not_configured" }, 503);
+    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) return json({ error: "key_rejected" }, 503);
+    if (error instanceof Anthropic.BadRequestError && /credit|billing/i.test(error.message)) return json({ error: "no_credit" }, 402);
     if (error instanceof Anthropic.APIError) return json({ error: "upstream" }, 502);
     return json({ error: "failed" }, 500);
   }

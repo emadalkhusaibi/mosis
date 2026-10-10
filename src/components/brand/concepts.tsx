@@ -7,7 +7,7 @@ import { useWorkspace } from "@/state/workspace";
 import { Button } from "@/components/ui/button";
 import { safeSvg, svgDataUri, type Brand, type Concept } from "@/domain/brand";
 
-type Failure = "not_configured" | "rate_limited" | "busy" | "declined" | "no_answer" | "offline" | "failed";
+type Failure = "not_configured" | "key_rejected" | "no_credit" | "rate_limited" | "busy" | "declined" | "no_answer" | "offline" | "failed";
 
 function downloadSvg(svg: string, name: string) {
   const a = Object.assign(document.createElement("a"), { href: svgDataUri(svg), download: `${name.replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase() || "logo"}.svg` });
@@ -45,7 +45,7 @@ export function LogoConcepts({ brand, setBrand }: { brand: Brand; setBrand: (fn:
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const e = data.error as string | undefined;
-        setFailure(e === "not_configured" || e === "rate_limited" || e === "busy" || e === "declined" || e === "no_answer" ? e : "failed");
+        setFailure(e === "not_configured" || e === "key_rejected" || e === "no_credit" || e === "rate_limited" || e === "busy" || e === "declined" || e === "no_answer" ? e : "failed");
         return;
       }
       // Checked again here: only plain vector drawings are ever stored or shown.
@@ -63,6 +63,8 @@ export function LogoConcepts({ brand, setBrand }: { brand: Brand; setBrand: (fn:
   };
 
   const failureText: Record<Failure, string> = {
+    key_rejected: t("The AI key on this site was rejected by Anthropic. The site owner needs to check the key.", "رفضت Anthropic مفتاح الذكاء الاصطناعي في هذا الموقع. على مالك الموقع التحقق من المفتاح."),
+    no_credit: t("The AI account behind this site is out of credit. The site owner needs to add credit.", "نفد رصيد حساب الذكاء الاصطناعي لهذا الموقع. على مالك الموقع إضافة رصيد."),
     not_configured: t("Logo drawing isn't switched on for this site yet. You can still build a letter mark below.", "رسم الشعارات غير مفعّل في هذا الموقع بعد. ما زال بإمكانك تصميم علامة بالحروف في الأسفل."),
     rate_limited: t("That's a lot of drawings in a short time. Try again in a few minutes.", "رسومات كثيرة في وقت قصير. حاول مرة أخرى بعد دقائق."),
     busy: t("The brand partner is busy right now. Try again shortly.", "شريك الهوية مشغول الآن. حاول بعد قليل."),

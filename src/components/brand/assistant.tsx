@@ -12,7 +12,7 @@ type Suggestions = {
   palettes: (Palette & { name: string; why: string })[];
   logo: (Pick<Logo, "shape" | "mark" | "font"> & { why: string }) | null;
 };
-type Failure = "not_configured" | "rate_limited" | "busy" | "declined" | "offline" | "failed";
+type Failure = "not_configured" | "key_rejected" | "no_credit" | "rate_limited" | "busy" | "declined" | "offline" | "failed";
 
 /** The AI brand partner: a short conversation whose suggestions can be applied to the studio in one tap. */
 export function BrandAssistant({ brand, setBrand }: { brand: Brand; setBrand: (fn: (b: Brand) => Brand) => void }) {
@@ -59,7 +59,7 @@ export function BrandAssistant({ brand, setBrand }: { brand: Brand; setBrand: (f
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const e = data.error as string | undefined;
-        setFailure(e === "not_configured" || e === "rate_limited" || e === "busy" || e === "declined" ? e : "failed");
+        setFailure(e === "not_configured" || e === "key_rejected" || e === "no_credit" || e === "rate_limited" || e === "busy" || e === "declined" ? e : "failed");
         // Take the unanswered message back out so the conversation stays a clean back-and-forth.
         setBrand((b) => ({ ...b, chat: b.chat.slice(0, -1) }));
         setDraft(clean);
@@ -77,6 +77,8 @@ export function BrandAssistant({ brand, setBrand }: { brand: Brand; setBrand: (f
   };
 
   const failureText: Record<Failure, string> = {
+    key_rejected: t("The AI key on this site was rejected by Anthropic. The site owner needs to check the key.", "رفضت Anthropic مفتاح الذكاء الاصطناعي في هذا الموقع. على مالك الموقع التحقق من المفتاح."),
+    no_credit: t("The AI account behind this site is out of credit. The site owner needs to add credit.", "نفد رصيد حساب الذكاء الاصطناعي لهذا الموقع. على مالك الموقع إضافة رصيد."),
     not_configured: t("The assistant isn't switched on for this site yet. Everything else in the studio works without it.", "المساعد غير مفعّل في هذا الموقع بعد. كل ما سواه في الاستوديو يعمل من دونه."),
     rate_limited: t("That's a lot of messages in a short time. Try again in a few minutes.", "رسائل كثيرة في وقت قصير. حاول مرة أخرى بعد دقائق."),
     busy: t("The assistant is busy right now. Try again shortly.", "المساعد مشغول الآن. حاول بعد قليل."),

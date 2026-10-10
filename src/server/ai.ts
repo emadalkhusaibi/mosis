@@ -18,3 +18,6 @@ export function limited(request: Request, scope: string, max: number, windowMs =
   if (buckets.size > 5000) buckets.clear();
   return recent.length > max;
 }
+
+/** The Anthropic key from the environment, tolerating stray spaces or quotes from copy-paste. */
+export const anthropicKey = () => process.env.ANTHROPIC_API_KEY?.trim().replace(/^["']|["']$/g, "") || null;
