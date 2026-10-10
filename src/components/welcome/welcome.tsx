@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { BrandSculpture } from "@/components/three/origin-3d";
 import { Wordmark } from "@/components/ui/origin";
 import { formatRials } from "@/lib/money";
-import { projection } from "@/domain/forecast";
+import { Amount, AudienceSection, EXAMPLE, EXAMPLE_CASH, FaqSection, FirstWeekSection, NextSection, NumbersStrip, PrinciplesSection, TourSection, WhySection } from "./welcome-story";
 
 function useStarted() {
   return useSyncExternalStore(
@@ -15,12 +15,6 @@ function useStarted() {
     () => false,
   );
 }
-
-/** Example figures: the default café profile run through the real forecast engine. Always labelled as an example. */
-const CAFE = { price: 2_500, variable: 900, units: 900, fixed: 1_500_000, setup: 6_000_000, growth: 3, capacity: null };
-const run = projection(CAFE, 7_000_000);
-const EXAMPLE = { capital: 10_000_000, reserve: 3_000_000, available: 7_000_000, lowest: run.lowestCash, lowMonth: run.lowestMonth, final: run.endingCash };
-const EXAMPLE_CASH = [run.initialCash, ...run.months.map((m) => m.cash)];
 
 export function Welcome() {
   const { t, lang, setLang } = useI18n();
@@ -37,7 +31,7 @@ export function Welcome() {
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
               {lang === "ar" ? "English" : "العربية"}
             </button>
-            <Link href="/sign-in" className="btn btn-ghost btn-sm">{t("Sign in", "تسجيل الدخول")}</Link>
+            <Link href="/sign-in" className="btn btn-ghost btn-sm w-nav-signin">{t("Sign in", "تسجيل الدخول")}</Link>
             <Link href={primary.href} className="btn btn-primary btn-sm">{started ? t("Open", "افتح") : t("Start", "ابدأ")}</Link>
           </nav>
         </div>
@@ -68,12 +62,17 @@ export function Welcome() {
           </div>
         </section>
 
+        <NumbersStrip />
+        <WhySection />
+        <AudienceSection />
+
         <section className="w-section" aria-labelledby="w-loop-title">
           <div className="w-container">
+            <p className="w-eyebrow">{t("How it works", "كيف يعمل")}</p>
             <h2 id="w-loop-title" className="w-h2">{t("One loop, from idea to decision", "حلقة واحدة، من الفكرة إلى القرار")}</h2>
             <p className="w-section-lede">{t("Each part feeds the next, so a change to your plan or numbers shows up where you decide.", "كل جزء يغذّي التالي، فيظهر أي تغيير في خطتك أو أرقامك حيث تتخذ قرارك.")}</p>
             <ol className="w-steps">
-              <Step n={1} icon={<Notebook size={20} />} title={t("Plan", "خطّط")} body={t("Answer 29 focused questions across seven chapters. Gaps stay visible.", "أجب عن ٢٩ سؤالاً مركّزاً في سبعة فصول. تبقى الفجوات ظاهرة.")}>
+              <Step n={1} icon={<Notebook size={20} />} title={t("Plan", "خطّط")} body={t("Answer focused questions across seven chapters. Gaps stay visible.", "أجب عن أسئلة مركّزة في سبعة فصول. تبقى الفجوات ظاهرة.")}>
                 <div className="w-extract">
                   <p className="w-extract-q">{t("What problem will you solve?", "ما المشكلة التي ستحلها؟")}</p>
                   <p className="w-extract-a">{t("Office workers nearby need a reliable coffee pickup before 8am.", "يحتاج موظفو المكاتب القريبة إلى قهوة جاهزة يُعتمد عليها قبل الثامنة صباحاً.")}</p>
@@ -102,7 +101,11 @@ export function Welcome() {
           </div>
         </section>
 
-        <section className="w-section w-section-alt" aria-labelledby="w-lang-title">
+        <TourSection />
+        <FirstWeekSection />
+        <PrinciplesSection />
+
+        <section className="w-section" aria-labelledby="w-lang-title">
           <div className="w-container w-bilingual">
             <div>
               <h2 id="w-lang-title" className="w-h2">{t("Designed in both languages", "مصمّم باللغتين")}</h2>
@@ -115,7 +118,10 @@ export function Welcome() {
           </div>
         </section>
 
-        <section className="w-section" aria-labelledby="w-close-title">
+        <FaqSection />
+        <NextSection />
+
+        <section className="w-section w-section-alt" aria-labelledby="w-close-title">
           <div className="w-container w-close">
             <h2 id="w-close-title" className="w-h2">{t("Find what to test before you spend.", "اعرف ما يجب اختباره قبل أن تنفق.")}</h2>
             <Link href={primary.href} className="btn btn-primary btn-lg">
@@ -134,20 +140,10 @@ export function Welcome() {
       <footer className="w-footer">
         <div className="w-container w-footer-inner">
           <Wordmark />
-          <p className="small muted">{t("Practice simulation. Not a bank, lender or financial adviser.", "محاكاة تدريبية. ليست مصرفاً أو جهة تمويل أو مستشاراً مالياً.")}</p>
+          <p className="small muted">{t("Practice simulation. Not a bank, lender or financial adviser.", "محاكاة تدريبية. ليست مصرفاً أو جهة تمويل أو مستشاراً مالياً.")} <Link href="/sign-in" className="link">{t("Sign in", "تسجيل الدخول")}</Link></p>
         </div>
       </footer>
     </div>
-  );
-}
-
-function Amount({ v }: { v: number }) {
-  const { lang, t } = useI18n();
-  return (
-    <span className="money" dir="ltr">
-      <span>{formatRials(v, lang)}</span>
-      <span className="rial" role="img" aria-label={t("Omani rials", "ريال عُماني")} />
-    </span>
   );
 }
 
