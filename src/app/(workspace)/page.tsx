@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, BookOpenText, Check, Plus, Trash } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useI18n } from "@/lib/i18n";
+import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { useToast } from "@/components/ui/toast";
 import { Panel, PanelHeader } from "@/components/ui/panel";
@@ -86,7 +86,7 @@ function NextDecision({ className }: { className?: string }) {
         const l = lessons.find((x) => `/learn/${x.id}` === move.href) ?? lessons[0];
         return {
           title: p(l.title),
-          reason: t(`A short lesson before your next money decision. About ${l.minutes} minutes.`, `درس قصير قبل قرارك المالي التالي. نحو ${l.minutes} دقائق.`),
+          reason: t(`A short lesson before your next money decision. About ${l.minutes} minutes.`, `درس قصير قبل قرارك المالي التالي. نحو ${arMinutes(l.minutes)}.`),
           cta: t("Start lesson", "ابدأ الدرس"),
         };
       }
@@ -233,7 +233,7 @@ function LearnNext({ className }: { className?: string }) {
       {lesson ? (
         <Link href={`/learn/${lesson.id}`} className="row row-pad">
           <span className="row-icon"><BookOpenText size={18} aria-hidden="true" /></span>
-          <span className="row-main"><span className="row-title row-title-wrap">{p(lesson.title)}</span><span className="row-sub">{t(`${lesson.minutes} min`, `${lesson.minutes} دقائق`)}</span></span>
+          <span className="row-main"><span className="row-title row-title-wrap">{p(lesson.title)}</span><span className="row-sub">{t(`${lesson.minutes} min`, arMinutes(lesson.minutes))}</span></span>
           <ArrowRight size={16} className="flip-rtl muted" aria-hidden="true" />
         </Link>
       ) : (

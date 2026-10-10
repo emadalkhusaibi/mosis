@@ -4,7 +4,7 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpenText, ChartLineUp, Check } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useI18n } from "@/lib/i18n";
+import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { Button } from "@/components/ui/button";
 import { SaveIndicator } from "@/components/ui/save-indicator";
@@ -127,7 +127,7 @@ export default function PlanSectionPage() {
                 <li key={l.id}>
                   <Link href={`/learn/${l.id}`} className="row row-pad">
                     <span className="row-icon"><BookOpenText size={16} aria-hidden="true" /></span>
-                    <span className="row-main"><span className="row-title row-title-wrap">{p(l.title)}</span><span className="row-sub">{state.learning.completed.includes(l.id) ? t("Completed", "مكتمل") : t(`${l.minutes} min`, `${l.minutes} دقائق`)}</span></span>
+                    <span className="row-main"><span className="row-title row-title-wrap">{p(l.title)}</span><span className="row-sub">{state.learning.completed.includes(l.id) ? t("Completed", "مكتمل") : t(`${l.minutes} min`, arMinutes(l.minutes))}</span></span>
                   </Link>
                 </li>
               ))}

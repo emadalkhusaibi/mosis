@@ -51,3 +51,10 @@ export function useI18n() {
   if (!v) throw new Error("LanguageProvider missing");
   return v;
 }
+
+/** Arabic count of minutes with the right number form: دقيقة، دقيقتان، ٣–١٠ دقائق، ١١+ دقيقة. */
+export function arMinutes(n: number) {
+  if (n === 1) return "دقيقة واحدة";
+  if (n === 2) return "دقيقتان";
+  return n >= 3 && n <= 10 ? `${n} دقائق` : `${n} دقيقة`;
+}

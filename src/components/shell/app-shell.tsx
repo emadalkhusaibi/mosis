@@ -96,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AccountMenu />
             <button type="button" className="btn btn-ghost btn-sm topbar-menu-btn" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
               <DotsNine size={18} aria-hidden="true" />
-              <span>{t("Menu", "القائمة")}</span>
+              <span className="topbar-menu-label">{t("Menu", "القائمة")}</span>
             </button>
           </div>
         </header>

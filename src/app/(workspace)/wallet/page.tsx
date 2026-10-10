@@ -186,8 +186,15 @@ function useWalletAction() {
       action: undo ? {
         label: t("Undo", "تراجع"),
         run: () => {
-          const u = undo(r)(ws.state);
-          if (!u.ok || !ws.update(() => u.state)) toast({ message: u.ok ? t("Undo couldn't be saved.", "تعذّر حفظ التراجع.") : walletError(u.error, t) });
+          // Run against the latest state, not the one captured when the toast appeared.
+          let failure: string | null = null;
+          const saved = ws.update((latest) => {
+            const u = undo(r)(latest);
+            if (u.ok) return u.state;
+            failure = walletError(u.error, t);
+            return latest;
+          });
+          if (failure || !saved) toast({ message: failure ?? t("Undo couldn't be saved.", "تعذّر حفظ التراجع.") });
         },
       } : undefined,
     });

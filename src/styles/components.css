@@ -351,3 +351,7 @@ a.row:hover, button.row:hover { background: var(--surface-hover); }
 @keyframes arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .page-root { animation: arrive var(--duration-enter) var(--ease-out) both; }
 @media (min-width: 64rem) { .topbar-menu-btn { display: none; } }
+@media (max-width: 23.99rem) {
+  .topbar-menu-label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .topbar-menu-btn { min-inline-size: var(--touch); padding-inline: 0; justify-content: center; }
+}

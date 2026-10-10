@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useI18n } from "@/lib/i18n";
+import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function LearnPage() {
           <p className="page-kicker">{t("Continue", "تابع")} · {p(paths[next.path])}</p>
           <h2 id="continue-title" className="next-title">{p(next.title)}</h2>
           <p className="next-reason">{why}</p>
-          <div className="cluster next-actions"><Button href={`/learn/${next.id}`} trailing={<ArrowRight size={18} />}>{t("Open lesson", "افتح الدرس")}</Button><span className="field-hint">{t(`${next.minutes} min including the exercise`, `${next.minutes} دقائق مع التمرين`)}</span></div>
+          <div className="cluster next-actions"><Button href={`/learn/${next.id}`} trailing={<ArrowRight size={18} />}>{t("Open lesson", "افتح الدرس")}</Button><span className="field-hint">{t(`${next.minutes} min including the exercise`, `${arMinutes(next.minutes)} مع التمرين`)}</span></div>
         </Panel>
       ) : <Panel className="next-decision"><h2 className="next-title">{t("You've completed every lesson.", "أكملت جميع الدروس.")}</h2></Panel>}
 
@@ -58,7 +58,7 @@ export default function LearnPage() {
                       <Link href={`/learn/${l.id}`} className={clsx("chapter-row", done.has(l.id) && "is-done")}>
                         <span className="chapter-row-icon" aria-hidden="true">{done.has(l.id) ? <Check size={18} weight="bold" /> : i + 1}</span>
                         <span className="chapter-row-main"><span className="chapter-row-title">{p(l.title)}</span><span className="chapter-row-intro">{p(l.exercise)}</span></span>
-                        <span className="chapter-row-meta"><span className="chapter-row-count">{t(`${l.minutes} min`, `${l.minutes} دقائق`)}</span>{done.has(l.id) && <span className="chip chip-positive">{t("Done", "مكتمل")}</span>}</span>
+                        <span className="chapter-row-meta"><span className="chapter-row-count">{t(`${l.minutes} min`, arMinutes(l.minutes))}</span>{done.has(l.id) && <span className="chip chip-positive">{t("Done", "مكتمل")}</span>}</span>
                         <ArrowRight size={18} className="flip-rtl chapter-row-arrow" aria-hidden="true" />
                       </Link>
                     </li>

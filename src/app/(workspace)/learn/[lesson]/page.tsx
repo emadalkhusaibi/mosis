@@ -4,7 +4,7 @@ import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, X } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useI18n } from "@/lib/i18n";
+import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { useToast } from "@/components/ui/toast";
 import { Panel } from "@/components/ui/panel";
@@ -64,7 +64,7 @@ function Lesson({ id }: { id: string }) {
       <header className="lesson-head">
         <p className="page-kicker">{p(paths[l.path])} · {t(`Lesson ${idx + 1} of ${lessons.length}`, `الدرس ${idx + 1} من ${lessons.length}`)}</p>
         <h1 className="page-title">{p(l.title)}</h1>
-        <p className="field-hint">{t(`About ${read} min to read, plus a short check and exercise.`, `نحو ${read} دقائق للقراءة، مع اختبار وتمرين قصيرين.`)}{completed && <> · <span className="chip chip-positive"><Check size={12} weight="bold" aria-hidden="true" />{t("Completed", "مكتمل")}</span></>}</p>
+        <p className="field-hint">{t(`About ${read} min to read, plus a short check and exercise.`, `نحو ${arMinutes(read)} للقراءة، مع اختبار وتمرين قصيرين.`)}{completed && <> · <span className="chip chip-positive"><Check size={12} weight="bold" aria-hidden="true" />{t("Completed", "مكتمل")}</span></>}</p>
       </header>
 
       <div className="lesson-text">{l.body.map((para, i) => <p key={i}>{p(para)}</p>)}</div>
