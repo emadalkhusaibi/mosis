@@ -12,7 +12,7 @@ export function ProgressRing({ value, size = 44, stroke = 4, label, className }:
   );
 }
 
-export function ProgressBar({ value, label, tone = "ink" }: { value: number; label: string; tone?: "ink" | "positive" | "caution" }) {
+export function ProgressBar({ value, label, tone = "accent" }: { value: number; label: string; tone?: "accent" | "warning" }) {
   const v = Math.max(0, Math.min(1, value));
   return (
     <div className={clsx("bar", `bar-${tone}`)} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v * 100)}>

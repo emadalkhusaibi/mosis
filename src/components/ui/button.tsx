@@ -3,7 +3,7 @@ import Link from "next/link";
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import clsx from "clsx";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "glass";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "danger-quiet";
 type Size = "sm" | "md" | "lg";
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; href?: string; icon?: ReactNode; trailing?: ReactNode; block?: boolean };
 

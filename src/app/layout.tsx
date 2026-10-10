@@ -11,7 +11,7 @@ import { LANG_COOKIE } from "@/lib/lang-cookie";
 
 export const metadata: Metadata = {
   title: { default: "moasis · مؤسس", template: "%s · moasis" },
-  description: "Practise your business before you commit your money. A bilingual founder workspace, made in Oman.",
+  description: "Practise the business before you risk the money. Test an idea, rehearse the numbers and decide what to do next, in English or Arabic. A practice simulation, made in Oman.",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -27,8 +27,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#eceff2" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1114" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f6f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#111518" },
   ],
 };
 
@@ -37,7 +37,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
       <body>
-        <div className="environment" aria-hidden="true" />
         <Providers lang={lang}>{children}</Providers>
       </body>
     </html>
