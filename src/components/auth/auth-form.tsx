@@ -11,7 +11,7 @@ import { Wordmark } from "@/components/ui/origin";
 
 type Errors = Partial<Record<"name" | "email" | "password" | "form", string>>;
 
-export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
+export function AuthForm({ mode, temporary = false }: { mode: "sign-in" | "sign-up"; temporary?: boolean }) {
   const { t, lang, setLang } = useI18n();
   const router = useRouter();
   const form = useRef<HTMLFormElement>(null);
@@ -46,6 +46,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           form: code.includes("USER_ALREADY_EXISTS") ? t("We couldn't create an account with these details. If you already have one, sign in instead.", "تعذّر إنشاء حساب بهذه البيانات. إن كان لديك حساب، سجّل الدخول.")
             : code.includes("INVALID_EMAIL_OR_PASSWORD") ? t("That email and password don't match.", "البريد وكلمة المرور غير متطابقين.")
             : res.error.status === 429 ? t("Too many attempts. Wait a minute and try again.", "محاولات كثيرة. انتظر دقيقة وحاول مجدداً.")
+            : code.includes("INVALID_ORIGIN") ? t("This address isn't allowed to sign in yet. Open Moasis from its main address and try again.", "هذا العنوان غير مسموح له بتسجيل الدخول بعد. افتح مؤسس من عنوانه الرئيسي وحاول مجدداً.")
+            : res.error.status >= 500 ? t("Accounts aren't working on this server right now. Your practice is still saved on this device.", "الحسابات لا تعمل على هذا الخادم حالياً. تدريبك ما زال محفوظاً على هذا الجهاز.")
             : t("Something went wrong. Please try again.", "حدث خطأ. حاول مرة أخرى."),
         });
         return;
@@ -69,6 +71,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <Wordmark />
         <h1 className="auth-title">{isUp ? t("Save your work across devices", "احفظ عملك عبر الأجهزة") : t("Sign in", "تسجيل الدخول")}</h1>
         <p className="secondary">{isUp ? t("A free account keeps your workspace and opens it on any device. Practice you've done as a guest in this browser comes with you.", "حساب مجاني يحفظ مساحة عملك ويفتحها من أي جهاز. ينتقل معك تدريبك كضيف في هذا المتصفح.") : t("Continue where you left off.", "تابع من حيث توقفت.")}</p>
+        {temporary && <p className="notice notice-warning" role="status">{t("Accounts on this server are temporary while it's being set up, and may disappear. Practice you do as a guest stays saved on this device.", "الحسابات على هذا الخادم مؤقتة أثناء إعداده وقد تختفي. ما تتدرب عليه كضيف يبقى محفوظاً على هذا الجهاز.")}</p>}
         <form ref={form} className="form-stack auth-form" onSubmit={(e) => { e.preventDefault(); void submit(); }} noValidate>
           {isUp && <Field label={t("Name", "الاسم")} error={errors.name}>{(f) => <Input id={f.id} aria-describedby={f.describedBy} aria-invalid={f.invalid || undefined} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={100} />}</Field>}
           <Field label={t("Email", "البريد الإلكتروني")} error={errors.email}>{(f) => <Input id={f.id} aria-describedby={f.describedBy} aria-invalid={f.invalid || undefined} type="email" dir="ltr" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" spellCheck={false} />}</Field>

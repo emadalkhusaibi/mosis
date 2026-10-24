@@ -5,7 +5,22 @@ import { headers } from "next/headers";
 import { authDatabase } from "./db";
 import { resetPasswordMail, sendMail } from "./mail";
 
+const https = (host?: string) => (host ? `https://${host}` : undefined);
+
+/**
+ * On Vercel previews the site runs on a branch URL, not the production one, so
+ * BETTER_AUTH_URL (usually the production URL) would make every sign-up fail with
+ * "Invalid origin". Previews use their own URL, and all of this deployment's
+ * Vercel URLs are trusted.
+ */
+const baseURL = (process.env.VERCEL_ENV === "preview" ? https(process.env.VERCEL_BRANCH_URL) ?? https(process.env.VERCEL_URL) : undefined) ?? process.env.BETTER_AUTH_URL ?? https(process.env.VERCEL_PROJECT_PRODUCTION_URL);
+const trustedOrigins = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL]
+  .map(https)
+  .filter((o): o is string => Boolean(o));
+
 export const auth = betterAuth({
+  baseURL,
+  trustedOrigins,
   database: authDatabase,
   emailAndPassword: {
     enabled: true,
