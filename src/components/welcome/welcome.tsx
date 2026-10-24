@@ -1,4 +1,5 @@
 "use client";
+import { accountsEnabled } from "@/lib/features";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { ArrowRight, ChartLineUp, Notebook, Strategy, Wallet } from "@phosphor-icons/react";
@@ -31,7 +32,7 @@ export function Welcome() {
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
               {lang === "ar" ? "English" : "العربية"}
             </button>
-            <Link href="/sign-in" className="btn btn-ghost btn-sm w-nav-signin">{t("Sign in", "تسجيل الدخول")}</Link>
+            {accountsEnabled && <Link href="/sign-in" className="btn btn-ghost btn-sm w-nav-signin">{t("Sign in", "تسجيل الدخول")}</Link>}
             <Link href={primary.href} className="btn btn-primary btn-sm">{started ? t("Open", "افتح") : t("Start", "ابدأ")}</Link>
           </nav>
         </div>
@@ -50,7 +51,7 @@ export function Welcome() {
                 <Link href={primary.href} className="btn btn-primary btn-lg">
                   {primary.label}<ArrowRight size={18} className="flip-rtl" aria-hidden="true" />
                 </Link>
-                {!started && <p className="small muted">{t("No account needed to start.", "لا تحتاج إلى حساب للبدء.")} <Link href="/sign-up" className="link">{t("Create an account", "أنشئ حساباً")}</Link></p>}
+                {!started && <p className="small muted">{t("No account needed. Your work is saved on this device.", "لا تحتاج إلى حساب. يُحفظ عملك على هذا الجهاز.")}{accountsEnabled && <> <Link href="/sign-up" className="link">{t("Create an account", "أنشئ حساباً")}</Link></>}</p>}
               </div>
             </div>
 
@@ -140,7 +141,7 @@ export function Welcome() {
       <footer className="w-footer">
         <div className="w-container w-footer-inner">
           <Wordmark />
-          <p className="small muted">{t("Practice simulation. Not a bank, lender or financial adviser.", "محاكاة تدريبية. ليست مصرفاً أو جهة تمويل أو مستشاراً مالياً.")} <Link href="/sign-in" className="link">{t("Sign in", "تسجيل الدخول")}</Link></p>
+          <p className="small muted">{t("Practice simulation. Not a bank, lender or financial adviser.", "محاكاة تدريبية. ليست مصرفاً أو جهة تمويل أو مستشاراً مالياً.")}{accountsEnabled && <> <Link href="/sign-in" className="link">{t("Sign in", "تسجيل الدخول")}</Link></>}</p>
         </div>
       </footer>
     </div>

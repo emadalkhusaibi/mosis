@@ -14,6 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { sectorOf } from "@/content/sectors";
 import { signOut } from "@/lib/auth-client";
+import { accountsEnabled } from "@/lib/features";
 import { primaryNav, workspaceNav, isActive } from "./nav";
 import { CommandMenu } from "./command-menu";
 
@@ -93,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             <LanguageToggle />
             <AppearanceMenu />
-            <AccountMenu />
+            {accountsEnabled && <AccountMenu />}
             <button type="button" className="btn btn-ghost btn-sm topbar-menu-btn" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
               <DotsNine size={18} aria-hidden="true" />
               <span className="topbar-menu-label">{t("Menu", "القائمة")}</span>
@@ -196,7 +197,7 @@ export function StorageStatus() {
         <span>{s.text}</span>
         {status === "error" && <button type="button" className="link" onClick={retry}>{t("Retry", "إعادة")}</button>}
       </p>
-      {mode === "guest" && !dismissed && !hide && (
+      {accountsEnabled && mode === "guest" && !dismissed && !hide && (
         <p className="small muted flex items-start gap-1">
           <span>
             <Link href="/sign-up" className="link">{t("Save across devices", "احفظ عبر الأجهزة")}</Link>{" "}

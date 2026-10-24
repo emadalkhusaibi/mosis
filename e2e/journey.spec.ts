@@ -95,7 +95,18 @@ test.describe("founder journey (English)", () => {
     }
   });
 
+  test("account pages stay hidden while accounts are off", async ({ page }) => {
+    test.skip(process.env.NEXT_PUBLIC_ACCOUNTS === "on", "Accounts are switched on for this build");
+    await page.goto("/sign-up");
+    await expect(page).not.toHaveURL(/sign-up/);
+    await startVenture(page);
+    await expect(page.getByRole("button", { name: "Account" })).toHaveCount(0);
+    await expect(page.getByText("Save across devices")).toHaveCount(0);
+  });
+
   test("guest work is imported into a new account", async ({ page }) => {
+    // Accounts are off until a hosted database is configured (NEXT_PUBLIC_ACCOUNTS=on).
+    test.skip(process.env.NEXT_PUBLIC_ACCOUNTS !== "on", "Accounts are switched off in this build");
     await startVenture(page, "Import Check Café");
     const email = `founder-${Date.now()}@example.com`;
     await page.goto("/sign-up");

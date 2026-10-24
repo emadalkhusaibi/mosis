@@ -15,6 +15,7 @@ import { sectorOf } from "@/content/sectors";
 import { emptyState, type State } from "@/domain/state";
 import { migrate } from "@/domain/migrate";
 import { signOut } from "@/lib/auth-client";
+import { accountsEnabled } from "@/lib/features";
 
 const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 const PRE_RESTORE_KEY = "moasis-before-restore";
@@ -78,8 +79,8 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="settings-row">
-              <p className="settings-row-text secondary">{t("You're practising as a guest. Your work is saved in this browser only.", "أنت تتدرّب كضيف. يُحفظ عملك في هذا المتصفح فقط.")}</p>
-              <div className="cluster"><Button variant="secondary" href="/sign-in">{t("Sign in", "تسجيل الدخول")}</Button><Button href="/sign-up">{t("Create account", "إنشاء حساب")}</Button></div>
+              <p className="settings-row-text secondary">{accountsEnabled ? t("You're practising as a guest. Your work is saved in this browser only.", "أنت تتدرّب كضيف. يُحفظ عملك في هذا المتصفح فقط.") : t("Your work is saved in this browser. To move it to another device, download a backup below and restore it there.", "يُحفظ عملك في هذا المتصفح. لنقله إلى جهاز آخر، نزّل نسخة احتياطية أدناه واستعدها هناك.")}</p>
+              {accountsEnabled && <div className="cluster"><Button variant="secondary" href="/sign-in">{t("Sign in", "تسجيل الدخول")}</Button><Button href="/sign-up">{t("Create account", "إنشاء حساب")}</Button></div>}
             </div>
           )}
         </Panel>

@@ -4,7 +4,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { emptyState, stateSchema, type State } from "@/domain/state";
 import { migrate } from "@/domain/migrate";
-import { useSession } from "@/lib/auth-client";
+import { useSession as useAuthSession } from "@/lib/auth-client";
+import { accountsEnabled } from "@/lib/features";
+
+const noSession = { isPending: false, data: null } as const;
+/** With accounts off, the session is never fetched and everyone works as a guest. */
+const useSession = accountsEnabled ? useAuthSession : () => noSession;
 
 export type SaveStatus = "loading" | "saved" | "saving" | "local" | "error" | "conflict" | "offline";
 export type Mode = "guest" | "account";
