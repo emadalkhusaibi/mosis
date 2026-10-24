@@ -4,7 +4,7 @@ import { startVenture } from "./helpers";
 test.describe("prove (English)", () => {
   test("a field test moves its assumption and can revise the forecast", async ({ page }) => {
     await startVenture(page);
-    await page.goto("/prove");
+    await page.goto("/prove/tests");
     await page.getByRole("button", { name: "Add", exact: true }).click();
     await page.getByLabel("I believe that…").fill("900 orders in month one");
     await page.getByRole("dialog").getByRole("button", { name: "Add assumption" }).click();
@@ -29,13 +29,13 @@ test.describe("prove (English)", () => {
     await expect(page.locator(".stat", { hasText: "Forecast changes from evidence" }).locator(".stat-value")).toHaveText("1");
   });
 
-  test("weekly review saves once per week and shows on Today", async ({ page }) => {
+  test("weekly review saves once per week and shows in Prove", async ({ page }) => {
     await startVenture(page);
     await page.goto("/prove/review");
     await page.getByLabel("What did you learn?").fill("Mornings are quieter than I assumed.");
     await page.getByRole("button", { name: "Save review" }).click();
     await expect(page.getByRole("button", { name: "Update review" })).toBeVisible();
-    await page.goto("/");
+    await page.goto("/prove");
     await expect(page.getByText("Done for this week")).toBeVisible();
   });
 

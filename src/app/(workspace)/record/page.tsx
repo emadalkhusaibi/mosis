@@ -98,7 +98,7 @@ export default function FounderRecordPage() {
         </div>
 
         <Panel className="col-12" aria-labelledby="evidence-title">
-          <PanelHeader id="evidence-title" title={t("Evidence from the field", "أدلة من الميدان")} action={<Link className="link-quiet small no-print" href="/prove">{t("All evidence", "كل الأدلة")}</Link>} />
+          <PanelHeader id="evidence-title" title={t("Evidence from the field", "أدلة من الميدان")} action={<Link className="link-quiet small no-print" href="/prove/tests">{t("All evidence", "كل الأدلة")}</Link>} />
           {tests.length ? (
             <ul className="list">
               {tests.map((x) => (
@@ -113,7 +113,7 @@ export default function FounderRecordPage() {
                 </li>
               ))}
             </ul>
-          ) : <p className="field-hint">{t("No field tests yet. A record with real evidence is worth far more to a mentor or lender than a long plan.", "لا اختبارات ميدانية بعد. السجل الذي فيه أدلة حقيقية أثمن عند المرشد أو جهة التمويل من خطة طويلة.")} <Link className="link" href="/prove">{t("Plan one", "خطط لاختبار")}</Link></p>}
+          ) : <p className="field-hint">{t("No field tests yet. A record with real evidence is worth far more to a mentor or lender than a long plan.", "لا اختبارات ميدانية بعد. السجل الذي فيه أدلة حقيقية أثمن عند المرشد أو جهة التمويل من خطة طويلة.")} <Link className="link" href="/prove/tests">{t("Plan one", "خطط لاختبار")}</Link></p>}
         </Panel>
       </div>
     </>

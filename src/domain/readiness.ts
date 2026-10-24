@@ -41,14 +41,14 @@ export function readiness(s: State, now: Date = new Date()) {
     customer: [
       item("c-plan", w("Write the idea and customer chapters", "اكتب فصلي الفكرة والزبون"), 30, section("idea") && section("customer"), "/plan/customer"),
       item("c-lesson", w("Finish the customer interviews lesson", "أكمل درس مقابلات الزبائن"), 10, lesson("interviews"), "/learn/interviews"),
-      item("c-test", w("Record a field test on demand", "سجّل اختباراً ميدانياً عن الطلب"), 40, testedIn("demand") >= 1, "/prove"),
-      item("c-tests", w("Record three field tests in total", "سجّل ثلاثة اختبارات ميدانية إجمالاً"), 20, doneTests.length >= 3, "/prove"),
+      item("c-test", w("Record a field test on demand", "سجّل اختباراً ميدانياً عن الطلب"), 40, testedIn("demand") >= 1, "/prove/tests"),
+      item("c-tests", w("Record three field tests in total", "سجّل ثلاثة اختبارات ميدانية إجمالاً"), 20, doneTests.length >= 3, "/prove/tests"),
     ],
     pricing: [
       item("p-price", w("Set a price in the forecast", "حدّد سعراً في التوقعات"), 20, s.finance.price > 0, "/forecast"),
       item("p-margin", w("Finish the margin lesson", "أكمل درس الهامش"), 20, lesson("margin"), "/learn/margin"),
       item("p-scenario", w("Make the pricing decision in Practice", "اتخذ قرار التسعير في التدريب"), 20, decided("pricing"), "/practice/pricing"),
-      item("p-test", w("Test your price with real people", "اختبر سعرك مع أناس حقيقيين"), 40, testedIn("price") >= 1, "/prove"),
+      item("p-test", w("Test your price with real people", "اختبر سعرك مع أناس حقيقيين"), 40, testedIn("price") >= 1, "/prove/tests"),
     ],
     cash: [
       item("k-forecast", w("Build a forecast", "ابنِ توقعات"), 20, hasForecast, "/forecast"),
@@ -65,8 +65,8 @@ export function readiness(s: State, now: Date = new Date()) {
     ],
     risk: [
       item("r-plan", w("Write the risks chapter", "اكتب فصل المخاطر"), 30, section("risk"), "/plan/risk"),
-      item("r-assumptions", w("Write down three assumptions", "اكتب ثلاثة افتراضات"), 30, s.assumptions.length >= 3, "/prove"),
-      item("r-high", w("Test a high-impact assumption", "اختبر افتراضاً عالي الأثر"), 40, doneTests.some((t) => s.assumptions.find((a) => a.id === t.assumptionId)?.impact === "high"), "/prove"),
+      item("r-assumptions", w("Write down three assumptions", "اكتب ثلاثة افتراضات"), 30, s.assumptions.length >= 3, "/prove/tests"),
+      item("r-high", w("Test a high-impact assumption", "اختبر افتراضاً عالي الأثر"), 40, doneTests.some((t) => s.assumptions.find((a) => a.id === t.assumptionId)?.impact === "high"), "/prove/tests"),
     ],
     pitch: [
       item("s-plan", w("Answer every plan chapter", "أجب عن كل فصول الخطة"), 50, plan.ratio === 1, "/plan"),

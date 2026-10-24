@@ -5,17 +5,17 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import { DropdownMenu } from "radix-ui";
 import { useTheme } from "next-themes";
 import {
-  ArrowsClockwise, CloudCheck, CloudSlash, Desktop, DotsNine, Gear, HardDrives, MagnifyingGlass, Moon, SignOut, SunDim, UserCircle, Warning, Check, X,
+  ArrowsClockwise, CaretLeft, CloudCheck, CloudSlash, Desktop, Gear, HardDrives, MagnifyingGlass, Moon, SignOut, SunDim, UserCircle, Warning, Check, X,
 } from "@phosphor-icons/react";
 import { Wordmark, Origin } from "@/components/ui/origin";
 import { SectorIcon } from "@/components/ui/icons";
-import { Sheet } from "@/components/ui/sheet";
+import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { sectorOf } from "@/content/sectors";
 import { signOut } from "@/lib/auth-client";
 import { accountsEnabled } from "@/lib/features";
-import { primaryNav, workspaceNav, isActive } from "./nav";
+import { itemOf, settingsItem, spaceOf, spaces, type NavItem } from "./nav";
 import { CommandMenu } from "./command-menu";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -24,7 +24,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t, lang } = useI18n();
   const ws = useWorkspace();
   const [search, setSearch] = useState(false);
-  const [menu, setMenu] = useState(false);
 
   // First-run founders see the welcome page; everyone else lands in their workspace.
   useEffect(() => {
@@ -42,45 +41,57 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Close the workspace menu whenever the route changes.
-  const [lastPath, setLastPath] = useState(pathname);
-  if (pathname !== lastPath) {
-    setLastPath(pathname);
-    if (menu) setMenu(false);
-  }
-
   if (!ws.ready) return <LoadingScreen />;
   if (pathname === "/setup") return <main id="main">{children}</main>;
 
   const sector = sectorOf(ws.state.venture.sector);
   const label = (n: { en: string; ar: string }) => (lang === "ar" ? n.ar : n.en);
+  const space = spaceOf(pathname);
+  const item = itemOf(pathname);
+  // Inner pages get a back button: to their section's first page if deeper (a plan chapter goes back to Plan), else to the space.
+  const back = pathname === space.href ? null : item && pathname !== item.href ? item : space;
 
   return (
     <div className="app-shell">
       <a href="#main" className="skip-link">{t("Skip to content", "انتقل إلى المحتوى")}</a>
 
-      <aside className="app-sidebar" aria-label={t("Workspace", "مساحة العمل")}>
+      <aside className="app-sidebar glass" aria-label={t("Workspace", "مساحة العمل")}>
         <Link href="/" className="sidebar-brand" aria-label={t("Moasis, Today", "مؤسس، اليوم")}>
           <Wordmark />
         </Link>
         <nav aria-label={t("Main", "الرئيسية")} className="sidebar-nav">
-          {primaryNav.map((item) => <SideLink key={item.href} item={item} label={label(item)} active={isActive(pathname, item.href)} />)}
-        </nav>
-        <nav aria-label={t("Workspace tools", "أدوات مساحة العمل")} className="sidebar-nav sidebar-group">
-          <p className="sidebar-group-label">{t("Workspace", "مساحة العمل")}</p>
-          {workspaceNav.filter((n) => n.href !== "/settings").map((item) => <SideLink key={item.href} item={item} label={label(item)} active={isActive(pathname, item.href)} />)}
+          {spaces.map((sp) => {
+            const open = sp.id === space.id;
+            return (
+              <div key={sp.id} className="sidebar-space">
+                <SideLink item={sp} label={label(sp)} active={open && pathname === sp.href} current={open} />
+                {open && sp.items.length > 0 && (
+                  <div className="sidebar-sub">
+                    {sp.items.map((i) => <SubLink key={i.href} item={i} label={label(i)} active={item?.href === i.href} />)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-foot">
-          <SideLink item={workspaceNav[3]} label={label(workspaceNav[3])} active={pathname === "/settings"} />
-          <div className="px-3 pt-2"><StorageStatus /></div>
+          <SideLink item={settingsItem} label={label(settingsItem)} active={pathname === "/settings"} />
+          <div className="sidebar-status"><StorageStatus /></div>
         </div>
       </aside>
 
       <div className="app-column">
-        <header className="app-topbar">
-          <Link href="/" className="topbar-mark" aria-label={t("Moasis, Today", "مؤسس، اليوم")}>
-            <Origin className="h-6 w-6" />
-          </Link>
+        <header className="app-topbar glass-bar">
+          {back ? (
+            <Link href={back.href} className="topbar-back">
+              <CaretLeft size={20} weight="bold" className="flip-rtl" aria-hidden="true" />
+              <span>{label(back)}</span>
+            </Link>
+          ) : (
+            <Link href="/" className="topbar-mark" aria-label={t("Moasis, Today", "مؤسس، اليوم")}>
+              <Origin className="h-6 w-6" />
+            </Link>
+          )}
           <Link href="/settings#business" className="venture-chip" title={t("Edit business", "تعديل المشروع")}>
             <span className="venture-chip-icon"><SectorIcon name={sector.icon} size={16} /></span>
             <bdi className="venture-chip-name">{ws.state.venture.name || t("Your business", "مشروعك")}</bdi>
@@ -95,10 +106,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <LanguageToggle />
             <AppearanceMenu />
             {accountsEnabled && <AccountMenu />}
-            <button type="button" className="btn btn-ghost btn-sm topbar-menu-btn" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
-              <DotsNine size={18} aria-hidden="true" />
-              <span className="topbar-menu-label">{t("Menu", "القائمة")}</span>
-            </button>
+            <Link href="/settings" className="icon-btn topbar-settings" aria-label={t("Settings", "الإعدادات")} aria-current={pathname === "/settings" ? "page" : undefined}>
+              <Gear size={20} aria-hidden="true" />
+            </Link>
           </div>
         </header>
 
@@ -111,47 +121,37 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <nav className="mobile-nav" aria-label={t("Main", "الرئيسية")}>
-        {primaryNav.map((item) => {
-          const active = isActive(pathname, item.href);
-          const I = item.icon;
+      <nav className="mobile-nav glass" aria-label={t("Main", "الرئيسية")}>
+        {spaces.map((sp) => {
+          const active = sp.id === space.id && pathname !== "/settings";
+          const I = sp.icon;
           return (
-            <Link key={item.href} href={item.href} className="mobile-tab" aria-current={active ? "page" : undefined}>
-              <I size={22} weight={active ? "fill" : "regular"} aria-hidden="true" />
-              <span>{label(item)}</span>
+            <Link key={sp.id} href={sp.href} className="mobile-tab" aria-current={active ? "page" : undefined}>
+              <I size={24} weight={active ? "fill" : "regular"} aria-hidden="true" />
+              <span>{label(sp)}</span>
             </Link>
           );
         })}
       </nav>
-
-      <Sheet open={menu} onOpenChange={setMenu} title={t("Workspace", "مساحة العمل")} size="sm">
-        <nav className="workspace-menu" aria-label={t("Workspace tools", "أدوات مساحة العمل")}>
-          {workspaceNav.map((item) => {
-            const I = item.icon;
-            return (
-              <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? "page" : undefined}>
-                <I size={20} aria-hidden="true" />
-                <span className="flex flex-col">
-                  <span>{label(item)}</span>
-                  <span className="workspace-menu-sub">{lang === "ar" ? item.descAr : item.descEn}</span>
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="mt-4"><StorageStatus /></div>
-      </Sheet>
 
       <CommandMenu open={search} onOpenChange={setSearch} />
     </div>
   );
 }
 
-function SideLink({ item, label, active }: { item: (typeof primaryNav)[number]; label: string; active: boolean }) {
+function SideLink({ item, label, active, current }: { item: NavItem; label: string; active: boolean; current?: boolean }) {
   const I = item.icon;
   return (
-    <Link href={item.href} className="side-link" aria-current={active ? "page" : undefined}>
-      <I size={20} weight={active ? "fill" : "regular"} aria-hidden="true" />
+    <Link href={item.href} className={clsx("side-link", current && "is-current")} aria-current={active ? "page" : undefined}>
+      <I size={20} weight={current || active ? "fill" : "regular"} aria-hidden="true" />
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function SubLink({ item, label, active }: { item: NavItem; label: string; active: boolean }) {
+  return (
+    <Link href={item.href} className="sub-link" aria-current={active ? "page" : undefined}>
       <span>{label}</span>
     </Link>
   );
@@ -233,7 +233,7 @@ function AppearanceMenu() {
   const Current = !mounted ? SunDim : theme === "dark" ? Moon : theme === "light" ? SunDim : Desktop;
   return (
     <DropdownMenu.Root dir={dir}>
-      <DropdownMenu.Trigger className="icon-btn" aria-label={t("Appearance", "المظهر")}>
+      <DropdownMenu.Trigger className="icon-btn topbar-appearance" aria-label={t("Appearance", "المظهر")}>
         <Current size={19} aria-hidden="true" />
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
