@@ -14,6 +14,8 @@ npm run dev                  # http://localhost:3000
 
 Accounts and workspaces are stored in Postgres when `DATABASE_URL` is set (Supabase, Neon or any hosted Postgres; on Vercel use the pooled connection string). Without it, a SQLite file is created at `./data/moasis.db` (override with `DATABASE_PATH`); on Vercel that file lives in /tmp and resets, so set `DATABASE_URL` for real accounts. Auth and workspace tables are created on first boot by `src/instrumentation.ts`; the first boot logs a harmless "schema mismatch" line while it does so.
 
+Partner enquiries from `/partners` go to `NEXT_PUBLIC_PARTNERS_EMAIL`. Opportunities are curated in `src/content/opportunities.ts`: add a partner's listing with a `contact` email or link to open it, and remove the `example` listings once real partners are live.
+
 Password reset emails go through [Resend](https://resend.com) when `RESEND_API_KEY` and `EMAIL_FROM` are set. Without them the link is printed to the server log in development, and the reset page says email isn't set up.
 
 | Command | What it does |

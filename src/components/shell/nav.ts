@@ -1,4 +1,4 @@
-import { BookOpenText, Certificate, Flask, RocketLaunch, PaintBrush, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
+import { BookOpenText, Briefcase, Certificate, Flask, RocketLaunch, PaintBrush, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
 
 export type NavItem = { href: string; en: string; ar: string; icon: Icon; descEn?: string; descAr?: string };
 
@@ -14,6 +14,7 @@ export const primaryNav: NavItem[] = [
 /** Everything else, always reachable from the labelled workspace menu, never only from search. */
 export const workspaceNav: NavItem[] = [
   { href: "/learn", en: "Learn", ar: "التعلّم", icon: BookOpenText, descEn: "Short lessons with practice questions", descAr: "دروس قصيرة مع أسئلة تدريبية" },
+  { href: "/opportunities", en: "Opportunities", ar: "الفرص", icon: Briefcase, descEn: "Internships, jobs and 1:1s with business leaders", descAr: "تدريب ووظائف وجلسات فردية مع قادة الأعمال" },
   { href: "/record", en: "Founder record", ar: "سجلّ المؤسس", icon: Certificate, descEn: "Your readiness and proof on one printable page", descAr: "جاهزيتك وأدلتك في صفحة واحدة قابلة للطباعة" },
   { href: "/launch", en: "Launch steps", ar: "خطوات الانطلاق", icon: RocketLaunch, descEn: "From plan to a registered business in Oman", descAr: "من الخطة إلى مشروع مسجّل في عُمان" },
   { href: "/brand", en: "Brand studio", ar: "استوديو الهوية", icon: PaintBrush, descEn: "Name, colours and logo, with an AI partner", descAr: "الاسم والألوان والشعار، مع مساعد ذكي" },

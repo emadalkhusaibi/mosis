@@ -188,6 +188,13 @@ export const stateSchema = z
       .optional(),
     /** Launch bridge: ids of real-world steps the founder has ticked off. */
     launch: z.array(z.string().max(40)).max(40).optional(),
+    /** Opportunities: listings the founder saved, and the ones they applied to or asked for a session with. */
+    connect: z
+      .object({
+        saved: z.array(z.string().max(80)).max(200),
+        sent: z.array(z.object({ id: z.string().max(80), at: isoDate, note: z.string().max(1200) })).max(200),
+      })
+      .optional(),
     /** Brand studio. Optional so older workspaces load unchanged. */
     brand: brandSchema.optional(),
   })

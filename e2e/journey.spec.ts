@@ -87,7 +87,7 @@ test.describe("founder journey (English)", () => {
   test("320px wide pages reflow without sideways scrolling", async ({ page }) => {
     await startVenture(page);
     await page.setViewportSize({ width: 320, height: 720 });
-    for (const path of ["/", "/wallet", "/forecast", "/plan/idea", "/practice", "/prove", "/prove/review", "/record", "/launch", "/learn", "/settings"]) {
+    for (const path of ["/", "/wallet", "/forecast", "/plan/idea", "/practice", "/prove", "/prove/review", "/record", "/launch", "/opportunities", "/partners", "/learn", "/settings"]) {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

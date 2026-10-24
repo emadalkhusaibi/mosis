@@ -225,3 +225,13 @@
 .w-next li p { color: var(--text-secondary); font-size: var(--text-label); }
 .w-next-tag { justify-self: start; margin-block-start: var(--space-2); font-size: 0.6875rem; font-weight: 600; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 0.125rem 0.5rem; }
 @media (max-width: 23.99rem) { .w-nav-signin { display: none; } }
+
+/* Partner page */
+.partner-form-wrap { max-inline-size: 46rem; }
+.partner-form { margin-block-start: var(--space-6); padding: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-panel); }
+.partner-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+.partner-offers { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+.partner-offers legend { margin-block-end: var(--space-2); }
+.partner-offer { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+.partner-done { margin-block-start: var(--space-6); font-size: var(--text-label); }
+@media (max-width: 30rem) { .w-nav-partners { display: none; } .partner-form { padding: var(--space-4); } }

@@ -32,6 +32,7 @@ export function Welcome() {
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
               {lang === "ar" ? "English" : "العربية"}
             </button>
+            <Link href="/partners" className="btn btn-ghost btn-sm w-nav-partners">{t("For companies", "للشركات")}</Link>
             {accountsEnabled && <Link href="/sign-in" className="btn btn-ghost btn-sm w-nav-signin">{t("Sign in", "تسجيل الدخول")}</Link>}
             <Link href={primary.href} className="btn btn-primary btn-sm">{started ? t("Open", "افتح") : t("Start", "ابدأ")}</Link>
           </nav>

@@ -611,3 +611,19 @@
 .launch-step-body { margin-block: var(--space-1) var(--space-2); color: var(--text-secondary); max-inline-size: 65ch; }
 .launch-step-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: 0; }
 .launch-step.is-done .launch-step-title { color: var(--text-secondary); }
+
+/* ============ Opportunities ============ */
+.opp-filters { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-block-end: var(--space-5); }
+.opp-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
+.opp-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-panel); min-inline-size: 0; }
+.opp-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.opp-tags .chip { display: inline-flex; align-items: center; gap: 0.25rem; }
+.opp-title { font-size: var(--text-section); font-weight: 600; margin: var(--space-1) 0 0; overflow-wrap: anywhere; }
+.opp-org { color: var(--text-secondary); font-size: var(--text-label); }
+.opp-about { color: var(--text-secondary); }
+.opp-topics { margin: 0; padding-inline-start: 1.1rem; color: var(--text-secondary); font-size: var(--text-label); display: grid; gap: 2px; }
+.opp-meta { color: var(--text-muted); font-size: var(--text-caption); margin-block-start: auto; padding-block-start: var(--space-2); }
+.opp-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.opp-sent { margin-block-start: var(--space-6); }
+.opp-partner { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-block-start: var(--space-6); }
+.opp-share { padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); background: var(--surface-subtle); }
