@@ -289,6 +289,8 @@
   body { background: #fff !important; color: #000 !important; }
   .plan-print { max-inline-size: none; }
   .notice { background: none !important; border: 1px solid #999; }
+  .skill-items { display: grid !important; }
+  .record .panel { break-inside: avoid; }
 }
 
 /* ============ Practice ============ */
@@ -571,3 +573,41 @@
 .daily-option-label { font-weight: 600; font-size: var(--text-label); }
 .daily-weigh { font-size: var(--text-caption); color: var(--text-secondary); line-height: 1.5; }
 .daily-option[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+
+/* ============ Founder record ============ */
+.record-head { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
+.record-mark { inline-size: 3rem; block-size: 3rem; flex: none; }
+.record-id { flex: 1 1 16rem; min-inline-size: 0; }
+.record-name { font-size: var(--text-section); font-weight: 600; margin: 0; overflow-wrap: anywhere; }
+.record-idea { margin-block-start: var(--space-2); color: var(--text-secondary); max-inline-size: 60ch; }
+.record-overall { display: grid; justify-items: end; gap: var(--space-1); }
+.record-score { font-size: var(--text-balance); font-weight: 600; line-height: 1; }
+.record-score small { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; margin-inline-start: 0.15rem; }
+.skills { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.skill summary { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr 2.5rem; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; cursor: pointer; list-style: none; }
+.skill summary::-webkit-details-marker { display: none; }
+.skill-name { font-weight: 500; }
+.skill-bar { block-size: 0.5rem; border-radius: 999px; background: var(--surface-subtle); overflow: hidden; }
+.skill-bar > span { display: block; block-size: 100%; background: var(--accent); border-radius: inherit; }
+.skill-score { text-align: end; }
+.skill-items { list-style: none; margin: 0 0 var(--space-3); padding: 0; display: grid; gap: var(--space-2); font-size: 0.9rem; }
+.skill-items li { display: grid; grid-template-columns: 1rem 1fr auto; align-items: center; gap: var(--space-2); color: var(--text-secondary); }
+.skill-items li.is-earned { color: var(--text); }
+.skill-items li.is-earned svg { color: var(--positive); }
+.skill-pts { color: var(--text-muted); }
+@media (max-width: 40rem) {
+  .record-overall { justify-items: start; }
+  .skill summary { grid-template-columns: 1fr 2.5rem; }
+  .skill-bar { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ============ Launch steps ============ */
+.launch-steps { list-style: none; margin: 0; padding: 0; display: grid; }
+.launch-step { display: flex; gap: var(--space-3); padding-block: var(--space-4); border-block-start: 1px solid var(--border); }
+.launch-step:first-child { border-block-start: 0; }
+.launch-step-main { min-inline-size: 0; flex: 1; }
+.launch-step-title { display: flex; gap: var(--space-2); font-weight: 600; cursor: pointer; }
+.launch-step-n { color: var(--text-muted); font-weight: 500; }
+.launch-step-body { margin-block: var(--space-1) var(--space-2); color: var(--text-secondary); max-inline-size: 65ch; }
+.launch-step-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: 0; }
+.launch-step.is-done .launch-step-title { color: var(--text-secondary); }

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
-import { ArrowRight, BookOpenText, CalendarCheck, Check, Flask, Plus, Trash } from "@phosphor-icons/react";
+import { ArrowRight, BookOpenText, CalendarCheck, Certificate, Check, Flask, Plus, Trash } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
@@ -18,6 +18,7 @@ import { formatCoverage, reserveCoverage } from "@/domain/reserve";
 import { nextMove, planProgress } from "@/domain/progress";
 import { evidenceSummary, weekStart } from "@/domain/evidence";
 import { dailyFor, localDay } from "@/content/daily";
+import { readiness } from "@/domain/readiness";
 
 type T = (en: string, ar: string) => string;
 
@@ -175,6 +176,11 @@ function ProveSummary({ className }: { className?: string }) {
         <li><Link href="/prove" className="row row-pad">
           <span className="row-icon"><Flask size={18} aria-hidden="true" /></span>
           <span className="row-main"><span className="row-title row-title-wrap">{sum.highUntested.length ? t(`${sum.highUntested.length} high-impact belief${sum.highUntested.length > 1 ? "s" : ""} untested`, `${sum.highUntested.length} من الافتراضات عالية الأثر دون اختبار`) : sum.assumptions ? t("Plan your next field test", "خطط لاختبارك الميداني التالي") : t("Write down what you believe", "اكتب ما تعتقده")}</span><span className="row-sub">{t(`${sum.supported} supported · ${sum.contradicted} contradicted`, `${sum.supported} مدعوم · ${sum.contradicted} تعارضه الأدلة`)}</span></span>
+          <ArrowRight size={16} className="flip-rtl muted" aria-hidden="true" />
+        </Link></li>
+        <li><Link href="/record" className="row row-pad">
+          <span className="row-icon"><Certificate size={18} aria-hidden="true" /></span>
+          <span className="row-main"><span className="row-title">{t("Founder record", "سجلّ المؤسس")}</span><span className="row-sub">{mounted ? t(`Readiness ${readiness(state).overall} of 100`, `الجاهزية ${readiness(state).overall} من ١٠٠`) : ""}</span></span>
           <ArrowRight size={16} className="flip-rtl muted" aria-hidden="true" />
         </Link></li>
       </ul>

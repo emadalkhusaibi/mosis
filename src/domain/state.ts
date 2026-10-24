@@ -186,6 +186,8 @@ export const stateSchema = z
       .array(z.object({ date: z.string().max(10), id: z.string().max(80), choice: z.number().int().min(0).max(5) }))
       .max(800)
       .optional(),
+    /** Launch bridge: ids of real-world steps the founder has ticked off. */
+    launch: z.array(z.string().max(40)).max(40).optional(),
     /** Brand studio. Optional so older workspaces load unchanged. */
     brand: brandSchema.optional(),
   })
