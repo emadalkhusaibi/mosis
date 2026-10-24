@@ -1,4 +1,5 @@
-import type { Finance } from "./state";
+import type { Finance, State } from "./state";
+import { marketCalendar } from "./calendar";
 import { addBaisa, type Baisa } from "@/lib/money";
 
 /**
@@ -12,6 +13,8 @@ import { addBaisa, type Baisa } from "@/lib/money";
  * - Capacity caps fulfilled units. null means unlimited; 0 means none.
  * - Scenarios scale demand only (Cautious 70%, Base 100%, Strong 130%).
  *   They are named what-ifs, not probabilities.
+ * - The optional market calendar scales each month's demand by a stated seasonal
+ *   percentage (see calendar.ts), rounded half-up to whole units.
  */
 export const FORECAST_MODEL = "v2-exact-half-up";
 
@@ -44,13 +47,14 @@ export function breakEven(f: Pick<Finance, "price" | "variable" | "fixed">): Bre
 }
 
 /** Twelve-month forward projection. A plan, not a ledger: it never touches recorded wallet activity. */
-export function projection(f: Finance, startingCash: Baisa, scenario: ScenarioKey = "base") {
+export function projection(f: Finance, startingCash: Baisa, scenario: ScenarioKey = "base", seasons?: readonly number[]) {
   const bps = scenarioBps[scenario];
   const unitMargin = f.price - f.variable;
   const initialCash = addBaisa(startingCash, -f.setup);
   let cash = initialCash;
   const months: Month[] = Array.from({ length: 12 }, (_, i) => {
-    const demand = demandFor(f.units, f.growth, bps, i);
+    const trend = demandFor(f.units, f.growth, bps, i);
+    const demand = seasons ? safe((BigInt(trend) * BigInt(seasons[i]) + 5_000n) / 10_000n) : trend;
     const units = f.capacity === null ? demand : Math.min(f.capacity, demand);
     const revenue = safe(BigInt(units) * BigInt(f.price));
     const cost = safe(BigInt(units) * BigInt(f.variable) + BigInt(f.fixed));
@@ -81,3 +85,13 @@ export function projection(f: Finance, startingCash: Baisa, scenario: ScenarioKe
   };
 }
 export type Projection = ReturnType<typeof projection>;
+
+/** Seasonal multipliers for this workspace, or undefined when the calendar is switched off. */
+export function seasonsOf(s: Pick<State, "venture" | "calendar">, from?: Date) {
+  return s.calendar === false ? undefined : marketCalendar(s.venture.sector, s.venture.city, from).map((m) => m.bps);
+}
+
+/** The workspace's forecast, with its market calendar applied. */
+export function forecastFor(s: Pick<State, "venture" | "calendar" | "finance">, startingCash: Baisa, scenario: ScenarioKey = "base", from?: Date) {
+  return projection(s.finance, startingCash, scenario, seasonsOf(s, from));
+}

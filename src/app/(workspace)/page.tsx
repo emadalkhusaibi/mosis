@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowRight, BookOpenText, Check, Plus, Trash } from "@phosphor-icons/react";
+import { useState, useSyncExternalStore } from "react";
+import { ArrowRight, BookOpenText, CalendarCheck, Check, Flask, Plus, Trash } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
@@ -13,9 +13,11 @@ import { Money } from "@/components/ui/money";
 import { categoryMeta } from "@/components/wallet/categories";
 import { sectorOf } from "@/content/sectors";
 import { available, newId, type State } from "@/domain/state";
-import { projection } from "@/domain/forecast";
+import { forecastFor } from "@/domain/forecast";
 import { formatCoverage, reserveCoverage } from "@/domain/reserve";
 import { nextMove, planProgress } from "@/domain/progress";
+import { evidenceSummary, weekStart } from "@/domain/evidence";
+import { dailyFor, localDay } from "@/content/daily";
 
 type T = (en: string, ar: string) => string;
 
@@ -43,6 +45,8 @@ export default function TodayPage() {
       <div className="grid-12 today-grid">
         <NextDecision className="col-12 col-lg-8" />
         <MoneyOverview className="col-12 col-lg-4" />
+        <DailyDecisionCard className="col-12 col-lg-8" />
+        <ProveSummary className="col-12 col-lg-4" />
         <FieldTask className="col-12 col-md-6 col-lg-4" />
         <PlanSummary className="col-12 col-md-6 col-lg-4" />
         <LearnNext className="col-12 col-md-6 col-lg-4" />
@@ -120,12 +124,70 @@ function NextDecision({ className }: { className?: string }) {
   );
 }
 
+const noop = () => () => {};
+
+/** One small decision a day. It moves no money; it builds the habit of weighing trade-offs. */
+function DailyDecisionCard({ className }: { className?: string }) {
+  const { t, p } = useI18n();
+  const { state, update } = useWorkspace();
+  // The day is the founder's local day, which the server can't know, so this renders after mount.
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  if (!mounted) return <Panel className={clsx("daily", className)} aria-label={t("Today's decision", "قرار اليوم")}><p className="page-kicker">{t("Today's five-minute decision", "قرار اليوم في خمس دقائق")}</p></Panel>;
+  const now = new Date();
+  const day = localDay(now);
+  const d = dailyFor(now);
+  const answer = state.daily?.find((x) => x.date === day && x.id === d.id);
+  const week = weekStart(now);
+  const daysThisWeek = new Set((state.daily ?? []).filter((x) => weekStart(new Date(`${x.date}T12:00:00`)) === week).map((x) => x.date)).size;
+  const choose = (choice: number) => update((s) => ({ ...s, daily: [{ date: day, id: d.id, choice }, ...(s.daily ?? []).filter((x) => x.date !== day)].slice(0, 800) }));
+  return (
+    <Panel className={clsx("daily", className)} aria-labelledby="daily-title">
+      <p className="page-kicker">{t("Today's five-minute decision", "قرار اليوم في خمس دقائق")} · {t(`${daysThisWeek} of 7 days this week`, `${daysThisWeek} من ٧ أيام هذا الأسبوع`)}</p>
+      <h2 className="daily-prompt" id="daily-title">{p(d.prompt)}</h2>
+      <div role="group" aria-labelledby="daily-title" className="daily-options">
+        {d.options.map((o, i) => (
+          <button key={i} type="button" aria-pressed={answer?.choice === i} className="choice daily-option" onClick={() => choose(i)}>
+            <span className="daily-option-label">{p(o.label)}</span>
+            {answer && <span className="daily-weigh">{p(o.weigh)}</span>}
+          </button>
+        ))}
+      </div>
+      <p className="field-hint">{answer ? t("Each choice has a cost. There's no score; tomorrow brings a new one.", "لكل خيار ثمن. لا توجد درجات؛ وغداً قرار جديد.") : t("Pick what you'd do. Then see what each choice costs.", "اختر ما ستفعله، ثم شاهد ثمن كل خيار.")}</p>
+    </Panel>
+  );
+}
+
+/** Evidence and the weekly review, at a glance. */
+function ProveSummary({ className }: { className?: string }) {
+  const { t } = useI18n();
+  const { state } = useWorkspace();
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const sum = evidenceSummary(state);
+  return (
+    <Panel className={className} aria-labelledby="prove-title">
+      <PanelHeader id="prove-title" title={t("Prove", "أثبِت")} subtitle={t(`${sum.done} field tests done · ${sum.planned} planned`, `${sum.done} اختبارات منجزة · ${sum.planned} مخطط لها`)} action={<Link className="link-quiet small" href="/prove">{t("Evidence", "الأدلة")}</Link>} />
+      <ul className="list">
+        <li><Link href="/prove/review" className="row row-pad">
+          <span className="row-icon"><CalendarCheck size={18} aria-hidden="true" /></span>
+          <span className="row-main"><span className="row-title">{t("Weekly review", "المراجعة الأسبوعية")}</span><span className="row-sub">{!mounted ? "" : sum.reviewedThisWeek ? t("Done for this week", "أُنجزت لهذا الأسبوع") : t("Due this week · 5 min", "مستحقة هذا الأسبوع · ٥ دقائق")}</span></span>
+          {mounted && sum.reviewedThisWeek ? <Check size={16} style={{ color: "var(--positive)" }} aria-hidden="true" /> : <ArrowRight size={16} className="flip-rtl muted" aria-hidden="true" />}
+        </Link></li>
+        <li><Link href="/prove" className="row row-pad">
+          <span className="row-icon"><Flask size={18} aria-hidden="true" /></span>
+          <span className="row-main"><span className="row-title row-title-wrap">{sum.highUntested.length ? t(`${sum.highUntested.length} high-impact belief${sum.highUntested.length > 1 ? "s" : ""} untested`, `${sum.highUntested.length} من الافتراضات عالية الأثر دون اختبار`) : sum.assumptions ? t("Plan your next field test", "خطط لاختبارك الميداني التالي") : t("Write down what you believe", "اكتب ما تعتقده")}</span><span className="row-sub">{t(`${sum.supported} supported · ${sum.contradicted} contradicted`, `${sum.supported} مدعوم · ${sum.contradicted} تعارضه الأدلة`)}</span></span>
+          <ArrowRight size={16} className="flip-rtl muted" aria-hidden="true" />
+        </Link></li>
+      </ul>
+    </Panel>
+  );
+}
+
 /** Three different numbers, labelled so they can't be confused. */
 function MoneyOverview({ className }: { className?: string }) {
   const { t, number } = useI18n();
   const { state: s } = useWorkspace();
   const hasForecast = s.finance.price > 0 && s.finance.units > 0;
-  const f = projection(s.finance, available(s));
+  const f = forecastFor(s, available(s));
   return (
     <Panel className={className} aria-labelledby="money-title">
       <PanelHeader id="money-title" title={t("Money", "المال")} action={<Link className="link-quiet small" href="/wallet">{t("Wallet", "المحفظة")}</Link>} />

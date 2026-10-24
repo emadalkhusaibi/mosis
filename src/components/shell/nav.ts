@@ -1,4 +1,4 @@
-import { BookOpenText, PaintBrush, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
+import { BookOpenText, Flask, PaintBrush, ChartLineUp, Gear, House, Notebook, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
 
 export type NavItem = { href: string; en: string; ar: string; icon: Icon; descEn?: string; descAr?: string };
 
@@ -8,11 +8,12 @@ export const primaryNav: NavItem[] = [
   { href: "/plan", en: "Plan", ar: "الخطة", icon: Notebook },
   { href: "/wallet", en: "Wallet", ar: "المحفظة", icon: Wallet },
   { href: "/practice", en: "Practice", ar: "التدريب", icon: Strategy },
-  { href: "/learn", en: "Learn", ar: "التعلّم", icon: BookOpenText },
+  { href: "/prove", en: "Prove", ar: "أثبِت", icon: Flask },
 ];
 
 /** Everything else, always reachable from the labelled workspace menu, never only from search. */
 export const workspaceNav: NavItem[] = [
+  { href: "/learn", en: "Learn", ar: "التعلّم", icon: BookOpenText, descEn: "Short lessons with practice questions", descAr: "دروس قصيرة مع أسئلة تدريبية" },
   { href: "/brand", en: "Brand studio", ar: "استوديو الهوية", icon: PaintBrush, descEn: "Name, colours and logo, with an AI partner", descAr: "الاسم والألوان والشعار، مع مساعد ذكي" },
   { href: "/forecast", en: "Forecast", ar: "التوقعات", icon: ChartLineUp, descEn: "Your year under named assumptions", descAr: "سنتك وفق افتراضات مسمّاة" },
   { href: "/practice/team", en: "Practice team", ar: "الفريق التدريبي", icon: Users, descEn: "Planned roles and payroll", descAr: "الأدوار والرواتب المخططة" },

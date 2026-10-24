@@ -12,7 +12,9 @@ cp .env.example .env.local   # then set BETTER_AUTH_SECRET to a long random stri
 npm run dev                  # http://localhost:3000
 ```
 
-The SQLite database is created at `./data/moasis.db` (override with `DATABASE_PATH`). Auth and workspace tables are created on first boot by `src/instrumentation.ts`; the first boot logs a harmless "schema mismatch" line while it does so.
+Accounts and workspaces are stored in Postgres when `DATABASE_URL` is set (Supabase, Neon or any hosted Postgres; on Vercel use the pooled connection string). Without it, a SQLite file is created at `./data/moasis.db` (override with `DATABASE_PATH`); on Vercel that file lives in /tmp and resets, so set `DATABASE_URL` for real accounts. Auth and workspace tables are created on first boot by `src/instrumentation.ts`; the first boot logs a harmless "schema mismatch" line while it does so.
+
+Password reset emails go through [Resend](https://resend.com) when `RESEND_API_KEY` and `EMAIL_FROM` are set. Without them the link is printed to the server log in development, and the reset page says email isn't set up.
 
 | Command | What it does |
 | --- | --- |
@@ -41,7 +43,7 @@ src/
   state/workspace.tsx     one provider for guest (localStorage) and account (server) persistence
   components/             ui primitives, shell, wallet card stack, charts, welcome page
   styles/                 tokens.css, base.css, components.css, pages.css, welcome.css
-  server/                 SQLite connection and auth config
+  server/                 database (Postgres or SQLite), auth and email
 ```
 
 **Money** is stored as integer baisa (1 rial = 1,000 baisa), so sums are exact. It is converted only at input (`parseRials`, which accepts Arabic digits) and display (`<Money>`, which draws the Central Bank of Oman rial sign).

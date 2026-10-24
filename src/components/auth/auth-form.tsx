@@ -82,6 +82,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               </div>
             )}
           </Field>
+          {!isUp && <Link className="link-quiet small auth-forgot" href="/forgot-password">{t("Forgot your password?", "نسيت كلمة المرور؟")}</Link>}
           {errors.form && <p className="notice notice-danger" role="alert">{errors.form}</p>}
           <Button type="submit" size="lg" block disabled={busy} aria-busy={busy}>{busy ? t("One moment…", "لحظة…") : isUp ? t("Create account", "إنشاء حساب") : t("Sign in", "تسجيل الدخول")}</Button>
         </form>

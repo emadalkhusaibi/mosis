@@ -179,6 +179,13 @@ export const stateSchema = z
     tests: z.array(fieldTestSchema).max(500),
     revisions: z.array(revisionSchema).max(2000),
     reviews: z.array(reviewSchema).max(520),
+    /** Omani market calendar in the forecast. Undefined means on. */
+    calendar: z.boolean().optional(),
+    /** Daily five-minute decisions: one per day, reflection only, no money moves. */
+    daily: z
+      .array(z.object({ date: z.string().max(10), id: z.string().max(80), choice: z.number().int().min(0).max(5) }))
+      .max(800)
+      .optional(),
     /** Brand studio. Optional so older workspaces load unchanged. */
     brand: brandSchema.optional(),
   })

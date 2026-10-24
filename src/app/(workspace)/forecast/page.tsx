@@ -13,7 +13,8 @@ import { Field, MoneyInput } from "@/components/ui/field";
 import { CashChart } from "@/components/charts/cash-chart";
 import { FinanceSubnav } from "@/components/finance/finance-subnav";
 import { sectorOf } from "@/content/sectors";
-import { projection, type Projection, type ScenarioKey } from "@/domain/forecast";
+import { projection, seasonsOf, type Projection, type ScenarioKey } from "@/domain/forecast";
+import { marketCalendar, seasonNames } from "@/domain/calendar";
 import { formatCoverage, reserveCoverage } from "@/domain/reserve";
 import { available, type Finance } from "@/domain/state";
 import { moneyErrorText, toBaisa, toDecimal, type Baisa, type MoneyError } from "@/lib/money";
@@ -30,8 +31,9 @@ export default function ForecastPage() {
   const sector = sectorOf(state.venture.sector);
   const unit = p(sector.unit);
   const start = available(state);
-  const r = useMemo(() => projection(f, start, scenario), [f, start, scenario]);
-  const base = useMemo(() => projection(f, start, "base"), [f, start]);
+  const seasons = useMemo(() => seasonsOf(state), [state]);
+  const r = useMemo(() => projection(f, start, scenario, seasons), [f, start, scenario, seasons]);
+  const base = useMemo(() => projection(f, start, "base", seasons), [f, start, seasons]);
   const defaults: Finance = { price: toBaisa(sector.price), variable: toBaisa(sector.variable), units: sector.units, fixed: toBaisa(sector.fixed), setup: toBaisa(sector.setup), growth: 3, capacity: null };
   const isDefault = (k: keyof Finance) => f[k] === defaults[k];
 
@@ -108,7 +110,8 @@ export default function ForecastPage() {
         </Panel>
 
         <div className="forecast-details">
-          <Sensitivity f={f} start={start} scenario={scenario} r={r} />
+          <MarketCalendar />
+          <Sensitivity f={f} start={start} scenario={scenario} r={r} seasons={seasons} />
 
           <Panel aria-labelledby="table-title">
             <PanelHeader id="table-title" title={t("Month by month", "شهراً بشهر")} subtitle={t("Exact to the baisa, so every row adds up.", "دقيق حتى البيسة، فيتطابق كل صف.")}
@@ -219,7 +222,38 @@ function CapacityField({ value, units, onChange, limited }: { value: number | nu
   );
 }
 
-function Sensitivity({ f, start, scenario, r }: { f: Finance; start: Baisa; scenario: ScenarioKey; r: Projection }) {
+/** The seasons the forecast applies, month by month, with a switch to turn them off. */
+function MarketCalendar() {
+  const { t, p, lang } = useI18n();
+  const { state, update } = useWorkspace();
+  const on = state.calendar !== false;
+  const months = useMemo(() => marketCalendar(state.venture.sector, state.venture.city), [state.venture.sector, state.venture.city]);
+  const monthName = (y: number, m: number) => new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(lang === "ar" ? "ar-OM-u-nu-latn" : "en-GB", { month: "short", timeZone: "UTC" });
+  const pct = (n: number) => (n === 0 ? "0%" : `${n > 0 ? "+" : "−"}${Math.abs(n)}%`);
+  return (
+    <Panel aria-labelledby="calendar-title">
+      <PanelHeader id="calendar-title" title={t("Omani market calendar", "التقويم التجاري العُماني")}
+        subtitle={t("Ramadan, Eid, summer, Khareef, back to school and National Day change demand. These are practice assumptions for your sector, not measured data.", "رمضان والعيد والصيف والخريف والعودة إلى المدارس والعيد الوطني تغيّر الطلب. هذه افتراضات تدريبية لقطاعك، وليست بيانات مقيسة.")}
+      />
+      <Segmented className="season-toggle" label={t("Market calendar", "التقويم التجاري")} value={on ? "on" : "off"} onChange={(v) => update((s) => ({ ...s, calendar: v === "on" }))} options={[{ value: "on", label: t("On", "مفعّل") }, { value: "off", label: t("Off", "متوقف") }]} />
+      <ol className={clsx("season-strip", !on && "is-off")} aria-label={t("Seasonal change in demand, by forecast month", "التغيّر الموسمي في الطلب حسب شهر التوقعات")}>
+        {months.map((m, i) => (
+          <li key={`${m.year}-${m.month}`} className={clsx("season-month", m.percent > 0 && "is-up", m.percent < 0 && "is-down")}>
+            <span className="season-name">{monthName(m.year, m.month)}<span className="sr-only"> {m.year}, {t(`month ${i + 1}`, `الشهر ${i + 1}`)}</span></span>
+            <span className="season-bar" aria-hidden="true"><span style={{ blockSize: `${Math.min(50, Math.abs(m.percent) * 1.6)}%` }} /></span>
+            <span className="season-pct num" dir="ltr">{pct(m.percent)}</span>
+            <span className="season-tags">{m.seasons.map((x) => p(seasonNames[x])).join(t(", ", "، "))}</span>
+          </li>
+        ))}
+      </ol>
+      <p className="field-hint">{on
+        ? t("Month 1 is next month. Islamic dates follow the moon and may shift by a day or two.", "الشهر الأول هو الشهر القادم. تتبع التواريخ الهجرية رؤية الهلال وقد تتغير بيوم أو يومين.")
+        : t("Off: every month follows the growth trend only.", "متوقف: يتبع كل شهر اتجاه النمو فقط.")}</p>
+    </Panel>
+  );
+}
+
+function Sensitivity({ f, start, scenario, r, seasons }: { f: Finance; start: Baisa; scenario: ScenarioKey; r: Projection; seasons?: readonly number[] }) {
   const { t } = useI18n();
   // One change at a time, through the same engine.
   const levers = [
@@ -227,7 +261,7 @@ function Sensitivity({ f, start, scenario, r }: { f: Finance; start: Baisa; scen
     { id: "cost", label: t("Unit cost −10%", "تكلفة الوحدة −١٠٪"), f: { ...f, variable: Math.round(f.variable * 0.9) } },
     { id: "fixed", label: t("Fixed costs −10%", "التكاليف الثابتة −١٠٪"), f: { ...f, fixed: Math.round(f.fixed * 0.9) } },
     { id: "demand", label: t("Month-one demand −30%", "طلب الشهر الأول −٣٠٪"), f: { ...f, units: Math.round(f.units * 0.7) } },
-  ].map((l) => ({ ...l, delta: projection(l.f, start, scenario).endingCash - r.endingCash }));
+  ].map((l) => ({ ...l, delta: projection(l.f, start, scenario, seasons).endingCash - r.endingCash }));
   const maxDelta = Math.max(...levers.map((l) => Math.abs(l.delta)), 1);
   return (
     <Panel aria-labelledby="levers-title">

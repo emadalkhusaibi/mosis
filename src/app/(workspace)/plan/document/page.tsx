@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { Origin } from "@/components/ui/origin";
 import { sectorOf } from "@/content/sectors";
-import { projection } from "@/domain/forecast";
+import { forecastFor } from "@/domain/forecast";
 import { available } from "@/domain/state";
 import { planProgress } from "@/domain/progress";
 
@@ -19,7 +19,7 @@ export default function PlanDocumentPage() {
   const { state } = useWorkspace();
   const v = state.venture;
   const sector = sectorOf(v.sector);
-  const f = projection(state.finance, available(state));
+  const f = forecastFor(state, available(state));
   const prog = planProgress(state);
   const missing = sections.filter((_, i) => !prog.sections[i].complete);
   const breakEven = f.breakEven.kind === "units" ? t(`${number(f.breakEven.units)} ${p(sector.unit)} a month`, `${number(f.breakEven.units)} ${p(sector.unit)} شهرياً`)
