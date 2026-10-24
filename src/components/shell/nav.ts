@@ -1,11 +1,11 @@
 import { BookOpenText, Briefcase, CalendarCheck, Certificate, ChartLineUp, Flask, Gear, Handshake, House, Notebook, PaintBrush, RocketLaunch, Stack, Strategy, Users, UsersThree, Wallet, type Icon } from "@phosphor-icons/react";
 
 export type NavItem = { href: string; en: string; ar: string; icon: Icon; descEn?: string; descAr?: string };
-export type SpaceId = "today" | "build" | "prove" | "connect";
+export type SpaceId = "today" | "build" | "prove" | "connect" | "wallet";
 export type Space = NavItem & { id: SpaceId; items: NavItem[] };
 
 /**
- * Four spaces, one per stage of the founder's work. Every page belongs to exactly
+ * Four spaces, one per stage of the founder's work, plus the founder's own wallet. Every page belongs to exactly
  * one space, so the tab bar always says where you are and the back button where
  * you came from.
  */
@@ -17,7 +17,6 @@ export const spaces: Space[] = [
     items: [
       { href: "/plan", en: "Business plan", ar: "خطة العمل", icon: Notebook, descEn: "Seven chapters, one question at a time", descAr: "سبعة فصول، سؤال تلو الآخر" },
       { href: "/forecast", en: "Forecast", ar: "التوقعات", icon: ChartLineUp, descEn: "Your year under named assumptions", descAr: "سنتك وفق افتراضات مسمّاة" },
-      { href: "/wallet", en: "Wallet", ar: "المحفظة", icon: Wallet, descEn: "Practice money, spent and protected", descAr: "المال التدريبي، مصروفاً ومحمياً" },
       { href: "/brand", en: "Brand studio", ar: "استوديو الهوية", icon: PaintBrush, descEn: "Name, colours and logo", descAr: "الاسم والألوان والشعار" },
       { href: "/practice/team", en: "Team", ar: "الفريق", icon: Users, descEn: "Planned roles and payroll", descAr: "الأدوار والرواتب المخططة" },
     ],
@@ -42,6 +41,7 @@ export const spaces: Space[] = [
       { href: "/consultant", en: "Consultant desk", ar: "مكتب المستشار", icon: UsersThree, descEn: "A separate mode for reviewing founders", descAr: "وضع منفصل لمراجعة المؤسسين" },
     ],
   },
+  { id: "wallet", href: "/wallet", en: "Wallet", ar: "المحفظة", icon: Wallet, descEn: "Your practice money, spent and protected", descAr: "مالك التدريبي، مصروفاً ومحمياً", items: [] },
 ];
 
 export const settingsItem: NavItem = { href: "/settings", en: "Settings", ar: "الإعدادات", icon: Gear, descEn: "Business, language and data", descAr: "المشروع واللغة والبيانات" };

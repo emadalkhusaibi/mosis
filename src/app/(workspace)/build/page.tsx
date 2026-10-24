@@ -21,7 +21,6 @@ export default function BuildHub() {
     <Hub id="build" values={{
       "/plan": <span className="num">{number(Math.round(plan.ratio * 100))}%</span>,
       "/forecast": !hasForecast ? t("Not set", "غير مُعد") : mounted ? <Money value={f.lowestCash} tone={f.lowestCash < 0} compact /> : null,
-      "/wallet": <Money value={available(s)} compact />,
       "/brand": s.brand?.name ? <bdi>{s.brand.name}</bdi> : null,
     }} />
   );

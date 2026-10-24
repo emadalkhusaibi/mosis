@@ -11,7 +11,6 @@ import { Money } from "@/components/ui/money";
 import { Segmented } from "@/components/ui/segmented";
 import { Field, MoneyInput } from "@/components/ui/field";
 import { CashChart } from "@/components/charts/cash-chart";
-import { FinanceSubnav } from "@/components/finance/finance-subnav";
 import { sectorOf } from "@/content/sectors";
 import { projection, seasonsOf, type Projection, type ScenarioKey } from "@/domain/forecast";
 import { marketCalendar, seasonNames } from "@/domain/calendar";
@@ -53,7 +52,6 @@ export default function ForecastPage() {
         description={t("Twelve months modelled from your assumptions. Changing it never touches your wallet.", "اثنا عشر شهراً مبنية على افتراضاتك. تغييرها لا يمسّ محفظتك أبداً.")}
         action={<Button variant="secondary" icon={<ArrowCounterClockwise size={18} />} onClick={resetToSector}>{t("Use sector defaults", "استخدام افتراضات القطاع")}</Button>}
       />
-      <FinanceSubnav />
 
       <div className="forecast-layout">
         <Panel className="forecast-outcome" aria-labelledby="outcome-title">

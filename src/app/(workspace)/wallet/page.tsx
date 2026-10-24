@@ -11,7 +11,6 @@ import { Money } from "@/components/ui/money";
 import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
 import { Field, Input, MoneyInput, TextArea } from "@/components/ui/field";
-import { FinanceSubnav } from "@/components/finance/finance-subnav";
 import { WalletCards, type CardId } from "@/components/wallet/wallet-cards";
 import { categoryMeta, spendCategories } from "@/components/wallet/categories";
 import { available, balance, spent, type Entry, type EntryCategory, type State } from "@/domain/state";
@@ -55,7 +54,7 @@ export default function WalletPage() {
   return (
     <>
       <PageHeader
-        title={t("Wallet", "المحفظة")}
+        title={t("My wallet", "محفظتي")}
         description={t("What you decided to spend, in exact rials. Practice money only.", "ما قررت إنفاقه، بالريال الدقيق. مال تدريبي فقط.")}
         action={
           <>
@@ -72,7 +71,6 @@ export default function WalletPage() {
           </>
         }
       />
-      <FinanceSubnav />
 
       <div className="wallet-layout">
         <div className="wallet-side">

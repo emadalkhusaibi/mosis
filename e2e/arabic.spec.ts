@@ -21,7 +21,7 @@ test.describe("Arabic workspace", () => {
     await page.getByRole("button", { name: "افتح مساحة عملي" }).click();
     await page.goto("/wallet");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("المحفظة");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("محفظتي");
     await expect(page.locator(".balance-list .is-strong dd .money-value").first()).toHaveText("7,000");
   });
 });
