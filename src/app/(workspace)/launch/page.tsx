@@ -13,7 +13,7 @@ export default function LaunchPage() {
   const { t, p } = useI18n();
   const { state, update } = useWorkspace();
   const done = new Set(state.launch ?? []);
-  const note = premisesNote(state.venture.sector);
+  const note = premisesNote(state.venture.sector, state.venture.profile?.channel);
   const sectorName = state.venture.sector === "other" ? state.venture.other : p(sectorOf(state.venture.sector).name);
   const toggle = (id: string) =>
     update((s) => {

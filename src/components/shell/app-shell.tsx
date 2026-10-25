@@ -26,9 +26,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [search, setSearch] = useState(false);
   const { scrolled, title } = useScrollHeader(pathname);
 
-  // First-run founders see the welcome page; everyone else lands in their workspace.
+  // First-run visitors start with the questions that shape their workspace; everyone else lands in it.
   useEffect(() => {
-    if (ws.ready && !ws.state.venture.started && pathname !== "/setup") router.replace("/welcome");
+    if (ws.ready && !ws.state.venture.started && pathname !== "/setup") router.replace("/setup");
   }, [ws.ready, ws.state.venture.started, pathname, router]);
 
   useEffect(() => {
