@@ -5,15 +5,14 @@ import { ArrowCounterClockwise, DotsThree, DownloadSimple, Info, MagnifyingGlass
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { useToast } from "@/components/ui/toast";
-import { PageHeader, Panel, PanelHeader } from "@/components/ui/panel";
 import { Button } from "@/components/ui/button";
 import { Money } from "@/components/ui/money";
 import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
 import { Field, Input, MoneyInput, TextArea } from "@/components/ui/field";
-import { WalletCards, type CardId } from "@/components/wallet/wallet-cards";
+import { WalletStack, type CardId } from "@/components/wallet/wallet-cards";
 import { categoryMeta, spendCategories } from "@/components/wallet/categories";
-import { available, balance, spent, type Entry, type EntryCategory, type State } from "@/domain/state";
+import { available, balance, level, ranks, spent, type Entry, type EntryCategory, type State } from "@/domain/state";
 import { adjustCapital, isReversed, recordExpense, recordIncome, reverseEntry, setReserve, walletError, type WalletResult } from "@/domain/wallet";
 import { formatCoverage, reserveCoverage } from "@/domain/reserve";
 import { moneyErrorText, toDecimal, type Baisa, type MoneyError } from "@/lib/money";
@@ -25,7 +24,7 @@ export default function WalletPage() {
   const { t, dir, number } = useI18n();
   const ws = useWorkspace();
   const s = ws.state;
-  const [card, setCard] = useState<CardId>("capital");
+  const [card, setCard] = useState<CardId | null>(null);
   const [sheet, setSheet] = useState<SheetKind>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
@@ -53,67 +52,99 @@ export default function WalletPage() {
 
   return (
     <>
-      <PageHeader
-        title={t("My wallet", "محفظتي")}
-        description={t("What you decided to spend, in exact rials. Practice money only.", "ما قررت إنفاقه، بالريال الدقيق. مال تدريبي فقط.")}
-        action={
-          <>
-            <Button icon={<Plus size={18} weight="bold" />} onClick={() => setSheet("expense")}>{t("Record expense", "تسجيل مصروف")}</Button>
-            <DropdownMenu.Root dir={dir}>
-              <DropdownMenu.Trigger className="icon-btn" aria-label={t("More wallet options", "خيارات أخرى للمحفظة")}><DotsThree size={22} weight="bold" /></DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content className="menu" align="end" sideOffset={8}>
-                  <DropdownMenu.Item className="menu-item" onSelect={exportCsv}><DownloadSimple size={18} />{t("Export all activity (CSV)", "تصدير كل الحركات (CSV)")}</DropdownMenu.Item>
-                  <DropdownMenu.Item className="menu-item" onSelect={() => setSheet("help")}><Info size={18} />{t("How the wallet works", "كيف تعمل المحفظة")}</DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-          </>
-        }
-      />
-
-      <div className="wallet-layout">
-        <div className="wallet-side">
-          <WalletCards active={card} onChange={setCard} />
-
-          <div className="wallet-actions" role="group" aria-label={t("Wallet actions", "إجراءات المحفظة")}>
-            <QuickAction icon={<Minus size={18} weight="bold" />} label={t("Expense", "مصروف")} onClick={() => setSheet("expense")} />
-            <QuickAction icon={<TrendUp size={18} />} label={t("Income", "دخل")} onClick={() => setSheet("income")} />
-            <QuickAction icon={<ShieldCheck size={18} />} label={t("Reserve", "احتياطي")} onClick={() => setSheet("reserve")} />
-            <QuickAction icon={<SlidersHorizontal size={18} />} label={t("Capital", "رأس المال")} onClick={() => setSheet("capital")} />
-          </div>
-
-          <Panel aria-labelledby="balances-title">
-            <h2 id="balances-title" className="sr-only">{t("Balances", "الأرصدة")}</h2>
-            <dl className="balance-list">
-              <div className="is-strong"><dt>{t("Available to spend", "المتاح للإنفاق")}</dt><dd><Money value={available(s)} /></dd></div>
-              <div><dt>{t("Protected reserve", "الاحتياطي المحمي")}<span className="balance-note">{coverage}</span></dt><dd><Money value={s.reserve} /></dd></div>
-              <div><dt>{t("Balance", "الرصيد")}<span className="balance-note">{t("Available plus reserve", "المتاح مع الاحتياطي")}</span></dt><dd><Money value={balance(s)} /></dd></div>
-              <div><dt>{t("Spent so far", "المُنفق حتى الآن")}</dt><dd><Money value={spent(s)} /></dd></div>
-            </dl>
-          </Panel>
+      <header className="page-heading wallet-heading">
+        <h1 className="page-title large-title">{t("My wallet", "محفظتي")}</h1>
+        <div className="wallet-head-actions">
+          {card && <button type="button" className="pill-btn" onClick={() => setCard(null)}>{t("Done", "تم")}</button>}
+          <button type="button" className="round-btn" aria-label={t("Record expense", "تسجيل مصروف")} onClick={() => setSheet("expense")}><Plus size={20} weight="bold" /></button>
+          <DropdownMenu.Root dir={dir}>
+            <DropdownMenu.Trigger className="round-btn" aria-label={t("More wallet options", "خيارات أخرى للمحفظة")}><DotsThree size={22} weight="bold" /></DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className="menu" align="end" sideOffset={8}>
+                <DropdownMenu.Item className="menu-item" onSelect={exportCsv}><DownloadSimple size={18} />{t("Export all activity (CSV)", "تصدير كل الحركات (CSV)")}</DropdownMenu.Item>
+                <DropdownMenu.Item className="menu-item" onSelect={() => setSheet("help")}><Info size={18} />{t("How the wallet works", "كيف تعمل المحفظة")}</DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </div>
+      </header>
 
-        <Panel className="wallet-activity" aria-labelledby="activity-title">
-          <PanelHeader id="activity-title" title={t("Activity", "الحركات")} subtitle={filtered ? t(`${entries.length} of ${s.entries.length} shown`, `${entries.length} من ${s.entries.length} معروضة`) : t(`${s.entries.length} recorded`, `${s.entries.length} حركة مسجّلة`)} />
-          <div className="activity-tools">
-            <label className="search-input">
-              <MagnifyingGlass size={18} aria-hidden="true" />
-              <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search activity", "ابحث في الحركات")} aria-label={t("Search activity", "ابحث في الحركات")} />
-            </label>
-            <Segmented label={t("Show", "عرض")} value={filter} onChange={setFilter} options={[{ value: "all", label: t("All", "الكل") }, { value: "in", label: t("Money in", "وارد") }, { value: "out", label: t("Money out", "صادر") }]} />
-            {filtered && <Button variant="ghost" size="sm" onClick={() => { setQ(""); setFilter("all"); }}>{t("Reset", "إعادة ضبط")}</Button>}
+      <div className="wallet-apple">
+        <WalletStack selected={card} onSelect={setCard} />
+
+        {card !== "pass" && (
+          <div className="wallet-actions" role="group" aria-label={t("Wallet actions", "إجراءات المحفظة")}>
+            <QuickAction icon={<Minus size={20} weight="bold" />} label={t("Expense", "مصروف")} onClick={() => setSheet("expense")} />
+            <QuickAction icon={<TrendUp size={20} weight="bold" />} label={t("Income", "دخل")} onClick={() => setSheet("income")} />
+            <QuickAction icon={<ShieldCheck size={20} weight="bold" />} label={t("Reserve", "احتياطي")} onClick={() => setSheet("reserve")} />
+            <QuickAction icon={<SlidersHorizontal size={20} weight="bold" />} label={t("Capital", "رأس المال")} onClick={() => setSheet("capital")} />
           </div>
-          {entries.length ? (
-            <ul className="list ledger" aria-live="polite">
-              {entries.map((e) => <EntryRow key={e.id} e={e} reversed={isReversed(s, e.id)} onOpen={() => setSheet({ entry: e.id })} />)}
-            </ul>
-          ) : filtered ? (
-            <div className="empty"><p className="empty-title">{t("Nothing matches", "لا توجد نتائج")}</p><p>{t("Try another word or show all activity.", "جرّب كلمة أخرى أو اعرض كل الحركات.")}</p><Button variant="secondary" size="sm" onClick={() => { setQ(""); setFilter("all"); }}>{t("Show all activity", "عرض كل الحركات")}</Button></div>
-          ) : (
-            <div className="empty"><p className="empty-title">{t("No activity yet", "لا توجد حركات بعد")}</p><p>{t("Record your first expense to see it here.", "سجّل أول مصروف ليظهر هنا.")}</p><Button size="sm" onClick={() => setSheet("expense")}>{t("Record expense", "تسجيل مصروف")}</Button></div>
-          )}
-        </Panel>
+        )}
+
+        {card === null && (
+          <section aria-labelledby="latest-title">
+            <div className="wallet-section-head">
+              <h2 id="latest-title" className="wallet-section-title">{t("Latest transactions", "أحدث الحركات")}</h2>
+              {s.entries.length > 0 && <button type="button" className="link-quiet small" onClick={() => setCard("capital")}>{t("See all", "عرض الكل")}</button>}
+            </div>
+            {s.entries.length ? (
+              <ul className="list ledger wallet-group">
+                {s.entries.slice(0, 5).map((e) => <EntryRow key={e.id} e={e} reversed={isReversed(s, e.id)} onOpen={() => setSheet({ entry: e.id })} />)}
+              </ul>
+            ) : (
+              <div className="wallet-group empty"><p className="empty-title">{t("No activity yet", "لا توجد حركات بعد")}</p><p>{t("Record your first expense to see it here.", "سجّل أول مصروف ليظهر هنا.")}</p></div>
+            )}
+          </section>
+        )}
+
+        {card === "capital" && (
+          <>
+            <section aria-labelledby="balances-title">
+              <h2 id="balances-title" className="wallet-section-title">{t("Balance", "الرصيد")}</h2>
+              <dl className="balance-list wallet-group">
+                <div className="is-strong"><dt>{t("Available to spend", "المتاح للإنفاق")}</dt><dd><Money value={available(s)} /></dd></div>
+                <div><dt>{t("Protected reserve", "الاحتياطي المحمي")}<span className="balance-note">{coverage}</span></dt><dd><Money value={s.reserve} /></dd></div>
+                <div><dt>{t("Balance", "الرصيد")}<span className="balance-note">{t("Available plus reserve", "المتاح مع الاحتياطي")}</span></dt><dd><Money value={balance(s)} /></dd></div>
+                <div><dt>{t("Spent so far", "المُنفق حتى الآن")}</dt><dd><Money value={spent(s)} /></dd></div>
+              </dl>
+            </section>
+            <section aria-labelledby="activity-title">
+              <div className="wallet-section-head">
+                <h2 id="activity-title" className="wallet-section-title">{t("Transactions", "الحركات")}</h2>
+                <span className="small muted">{filtered ? t(`${entries.length} of ${s.entries.length} shown`, `${entries.length} من ${s.entries.length} معروضة`) : t(`${s.entries.length} recorded`, `${s.entries.length} حركة مسجّلة`)}</span>
+              </div>
+              <div className="activity-tools">
+                <label className="search-input">
+                  <MagnifyingGlass size={18} aria-hidden="true" />
+                  <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search activity", "ابحث في الحركات")} aria-label={t("Search activity", "ابحث في الحركات")} />
+                </label>
+                <Segmented label={t("Show", "عرض")} value={filter} onChange={setFilter} options={[{ value: "all", label: t("All", "الكل") }, { value: "in", label: t("Money in", "وارد") }, { value: "out", label: t("Money out", "صادر") }]} />
+                {filtered && <Button variant="ghost" size="sm" onClick={() => { setQ(""); setFilter("all"); }}>{t("Reset", "إعادة ضبط")}</Button>}
+              </div>
+              {entries.length ? (
+                <ul className="list ledger wallet-group" aria-live="polite">
+                  {entries.map((e) => <EntryRow key={e.id} e={e} reversed={isReversed(s, e.id)} onOpen={() => setSheet({ entry: e.id })} />)}
+                </ul>
+              ) : (
+                <div className="wallet-group empty"><p className="empty-title">{filtered ? t("Nothing matches", "لا توجد نتائج") : t("No activity yet", "لا توجد حركات بعد")}</p>{filtered && <Button variant="secondary" size="sm" onClick={() => { setQ(""); setFilter("all"); }}>{t("Show all activity", "عرض كل الحركات")}</Button>}</div>
+              )}
+            </section>
+          </>
+        )}
+
+        {card === "reserve" && (
+          <section aria-labelledby="reserve-title">
+            <h2 id="reserve-title" className="wallet-section-title">{t("Reserve", "الاحتياطي")}</h2>
+            <dl className="balance-list wallet-group">
+              <div className="is-strong"><dt>{t("Protected reserve", "الاحتياطي المحمي")}</dt><dd><Money value={s.reserve} /></dd></div>
+              <div><dt>{t("Covers", "يغطي")}</dt><dd className="wallet-dd-text">{coverage}</dd></div>
+              <div><dt>{t("Fixed costs a month", "التكاليف الثابتة شهرياً")}</dt><dd><Money value={s.finance.fixed} /></dd></div>
+            </dl>
+            <p className="field-hint wallet-note">{t("Money in the reserve can't be spent from the wallet. It's the cushion that keeps a slow month from closing the business.", "المال في الاحتياطي لا يُنفق من المحفظة. إنه الوسادة التي تمنع شهراً بطيئاً من إغلاق المشروع.")}</p>
+          </section>
+        )}
+
+        {card === "pass" && <PassDetail />}
       </div>
 
       <ExpenseSheet open={sheet === "expense"} onClose={close} />
@@ -126,11 +157,28 @@ export default function WalletPage() {
   );
 }
 
+function PassDetail() {
+  const { t, lang } = useI18n();
+  const { state } = useWorkspace();
+  const lv = level(state);
+  return (
+    <section aria-labelledby="pass-title">
+      <h2 id="pass-title" className="wallet-section-title">{t("Founder pass", "بطاقة المؤسس")}</h2>
+      <dl className="balance-list wallet-group">
+        <div className="is-strong"><dt>{t("Level", "المستوى")}</dt><dd>{lv.index + 1} · {ranks[lv.index][lang === "ar" ? 1 : 0]}</dd></div>
+        <div><dt>{t("Experience", "الخبرة")}</dt><dd className="num">{lv.xp} XP</dd></div>
+        <div><dt>{t("To the next level", "إلى المستوى التالي")}</dt><dd className="num">{lv.next ? `${lv.toNext} XP` : t("Top level", "أعلى مستوى")}</dd></div>
+      </dl>
+      <p className="field-hint wallet-note">{t("Each lesson you finish and each practice decision you make earns 100 XP.", "كل درس تُكمله وكل قرار تدريبي تتخذه يمنحك ١٠٠ نقطة خبرة.")}</p>
+    </section>
+  );
+}
+
 function QuickAction({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button type="button" className="quick-action" onClick={onClick}>
       <span className="quick-action-icon" aria-hidden="true">{icon}</span>
-      <span>{label}</span>
+      <span className="quick-action-label">{label}</span>
     </button>
   );
 }

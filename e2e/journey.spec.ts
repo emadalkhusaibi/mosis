@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { startVenture } from "./helpers";
 
-const availableText = (page: import("@playwright/test").Page) => page.locator(".balance-list .is-strong dd .money-value").first();
+const availableText = (page: import("@playwright/test").Page) => page.locator(".wcard-capital .wcard-amount .money-value");
 
 test.describe("founder journey (English)", () => {
   test("new visitors land on the welcome page", async ({ page }) => {
