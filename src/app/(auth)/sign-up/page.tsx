@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
+import { persistentStorage } from "@/server/db";
 export const metadata: Metadata = { title: "Create account" };
-export default function Page() { return <AuthForm mode="sign-up" />; }
+export const dynamic = "force-dynamic";
+export default function Page() { return <AuthForm mode="sign-up" temporary={!persistentStorage} />; }

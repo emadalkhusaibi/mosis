@@ -35,7 +35,8 @@ function fromV2(d: Loose): State {
       fixed: toBaisa(num(d.finance?.fixed)),
       setup: toBaisa(num(d.finance?.setup)),
       growth: num(d.finance?.growth),
-      capacity: Math.round(num(d.finance?.capacity)),
+      // Older apps used 0 for "unlimited"; v4 makes that explicit.
+      capacity: num(d.finance?.capacity) > 0 ? Math.round(num(d.finance?.capacity)) : null,
     },
     reserve: toBaisa(num(d.reserve)),
     entries: (d.transactions ?? []).map((t: Loose) => ({
@@ -88,13 +89,28 @@ function fromConcept(d: Loose): State {
   };
 }
 
-/** Accepts any known workspace shape and returns a valid v3 state, or null. Never throws. */
+/** v3 → v4: explicit unlimited capacity and the evidence collections. Everything else carries over. */
+function fromV3(d: Loose): unknown {
+  const cap = d.finance?.capacity;
+  return {
+    ...d,
+    version: 4,
+    finance: { ...d.finance, capacity: typeof cap === "number" && cap > 0 ? cap : null },
+    assumptions: [],
+    tests: [],
+    revisions: [],
+    reviews: [],
+  };
+}
+
+/** Accepts any known workspace shape and returns a valid v4 state, or null. Never throws. */
 export function migrate(input: unknown): State | null {
   if (!input || typeof input !== "object") return null;
   const d = input as Loose;
   let candidate: unknown;
   try {
-    if (d.version === 3) candidate = d;
+    if (d.version === 4) candidate = d;
+    else if (d.version === 3) candidate = fromV3(d);
     else if (d.version === 2) candidate = fromV2(d);
     else if (d.business && Array.isArray(d.transactions)) candidate = fromConcept(d);
     else return null;

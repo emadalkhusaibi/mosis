@@ -5,6 +5,10 @@ export type Question = {
   label: Words;
   hint: Words;
   optional?: boolean;
+  /** Filled in per business type by tailor.ts. */
+  example?: Words;
+  /** True for questions only this business type gets. */
+  specific?: boolean;
 };
 export const sections: {
   id: string;
@@ -16,8 +20,8 @@ export const sections: {
     id: "idea",
     name: w("Idea & purpose", "الفكرة والهدف"),
     intro: w(
-      "Make the business specific enough to test.",
-      "اجعل فكرة المشروع واضحة بما يكفي لاختبارها.",
+      "Make your {place} specific enough to test.",
+      "اجعل فكرة {place} واضحة بما يكفي لاختبارها.",
     ),
     questions: [
       {
@@ -27,16 +31,16 @@ export const sections: {
           "ما المشكلة التي ستحلّها؟",
         ),
         hint: w(
-          "Describe a situation your customer faces today.",
-          "صِف موقفاً يواجهه عميلك اليوم.",
+          "Describe a situation your {customers} face today.",
+          "صِف موقفاً يواجهه {customers} اليوم.",
         ),
       },
       {
         key: "offer",
         label: w("What exactly will you sell?", "ماذا ستبيع تحديداً؟"),
         hint: w(
-          "Name the product or service, what is included, and the unit of sale.",
-          "حدّد المنتج أو الخدمة وما يشمله العرض ووحدة البيع.",
+          "Name the {products} you will offer, what is included, and the unit of sale.",
+          "حدّد {products} التي ستقدّمها وما يشمله العرض ووحدة البيع.",
         ),
       },
       {
@@ -73,7 +77,7 @@ export const sections: {
     questions: [
       {
         key: "customer",
-        label: w("Who is your first customer?", "من هو عميلك الأول؟"),
+        label: w("Who will your first {customers} be?", "من هم {customers} الذين ستبدأ بهم؟"),
         hint: w(
           "Be specific about location, needs, habits and ability to pay.",
           "حدّد الموقع والاحتياجات والعادات والقدرة على الدفع.",
@@ -156,8 +160,8 @@ export const sections: {
       {
         key: "difference",
         label: w(
-          "Why would customers choose you?",
-          "لماذا سيختارك العملاء؟",
+          "Why would {customers} choose your {place}?",
+          "لماذا سيختارك {customers}؟",
         ),
         hint: w(
           "Explain a useful, credible difference beyond lower prices.",
@@ -167,8 +171,8 @@ export const sections: {
       {
         key: "reach",
         label: w(
-          "How many customers can you realistically reach?",
-          "كم عميلاً يمكنك الوصول إليه واقعياً؟",
+          "How many {customers} can you realistically reach?",
+          "كم عدد {customers} الذين يمكنك الوصول إليهم واقعياً؟",
         ),
         hint: w(
           "Show your calculation and where each input came from.",
@@ -178,8 +182,8 @@ export const sections: {
       {
         key: "channels",
         label: w(
-          "How will you acquire your first ten customers?",
-          "كيف ستكسب أول عشرة عملاء؟",
+          "How will you win your first ten {customers}?",
+          "كيف ستكسب أول عشرة من {customers}؟",
         ),
         hint: w(
           "Choose channels, expected cost and a way to track conversion.",
@@ -239,8 +243,8 @@ export const sections: {
       {
         key: "delivery",
         label: w(
-          "How will an order become a delivered product or service?",
-          "كيف يتحول الطلب إلى منتج أو خدمة مسلّمة؟",
+          "What are the steps from an order to a finished {product}?",
+          "ما الخطوات من لحظة الطلب حتى إتمام {product}؟",
         ),
         hint: w(
           "List the steps, lead times and quality checks.",
@@ -249,7 +253,7 @@ export const sections: {
       },
       {
         key: "suppliers",
-        label: w("Who will supply what you need?", "من سيورّد احتياجاتك؟"),
+        label: w("Who will supply {supply}?", "من سيورّد {supply}؟"),
         hint: w(
           "Lead times, minimum orders and a backup supplier.",
           "مدة التوريد والحد الأدنى للطلب ومورّد بديل.",
@@ -258,8 +262,8 @@ export const sections: {
       {
         key: "people",
         label: w(
-          "What work will you do and what will you delegate?",
-          "ما العمل الذي ستنجزه وما الذي ستفوّضه؟",
+          "What will you do yourself, and when will you need your first {staff}?",
+          "ما الذي ستنجزه بنفسك، ومتى ستحتاج إلى {staff}؟",
         ),
         hint: w(
           "Roles, weekly hours, skills and hiring triggers.",
@@ -269,12 +273,12 @@ export const sections: {
       {
         key: "location",
         label: w(
-          "What location, tools and systems do you need?",
-          "ما الموقع والأدوات والأنظمة التي تحتاجها؟",
+          "What does your {place} need on day one?",
+          "ما الذي تحتاجه في {place} من اليوم الأول؟",
         ),
         hint: w(
-          "Consider access, capacity, records and customer support.",
-          "فكّر في سهولة الوصول والسعة والسجلات وخدمة العملاء.",
+          "Location, tools, capacity for {peak}, records and support.",
+          "الموقع والأدوات والطاقة اللازمة في {peak} والسجلات والدعم.",
         ),
       },
       {
@@ -305,8 +309,8 @@ export const sections: {
           "ما أكبر ثلاثة مخاطر؟",
         ),
         hint: w(
-          "For each, record likelihood, impact, early warning and mitigation.",
-          "لكل خطر، حدّد الاحتمال والأثر والإنذار المبكر وخطة التخفيف.",
+          "For each, record likelihood, impact, early warning and mitigation, including what could go wrong during {peak}.",
+          "لكل خطر، حدّد الاحتمال والأثر والإنذار المبكر وخطة التخفيف، بما في ذلك ما قد يحدث في {peak}.",
         ),
       },
       {
@@ -367,8 +371,8 @@ export const sections: {
           "ما أصغر إطلاق يمكنك التعلّم منه؟",
         ),
         hint: w(
-          "Define who joins, what is sold and what you will measure.",
-          "حدّد المشاركين وما سيباع وما ستقيسه.",
+          "Define who joins, which {products} you sell and what you will measure.",
+          "حدّد المشاركين و{products} التي ستبيعها وما ستقيسه.",
         ),
       },
       {

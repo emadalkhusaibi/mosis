@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { db } from "@/server/db";
+import { workspaces } from "@/server/db";
 import { currentUser } from "@/server/auth";
 import { stateSchema } from "@/domain/state";
 import { migrate } from "@/domain/migrate";
@@ -8,12 +8,10 @@ export const dynamic = "force-dynamic";
 const MAX_BYTES = 2_000_000;
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
-type Row = { document: string; revision: number; updated_at: string };
-
 export async function GET() {
   const user = await currentUser();
   if (!user) return json({ error: "unauthorized" }, 401);
-  const row = db.prepare("SELECT document, revision, updated_at FROM workspace WHERE user_id = ?").get(user.id) as Row | undefined;
+  const row = await workspaces.get(user.id);
   return json({
     user: { name: user.name, email: user.email },
     state: row ? migrate(JSON.parse(row.document)) : null,
@@ -38,10 +36,10 @@ export async function PUT(request: Request) {
   const stamp = new Date().toISOString();
   const doc = JSON.stringify(data.state);
   // Optimistic concurrency: a stale revision never overwrites a newer save.
-  const result =
+  const written =
     data.revision === 0
-      ? db.prepare("INSERT INTO workspace (user_id, document, revision, updated_at) VALUES (?, ?, 1, ?) ON CONFLICT(user_id) DO NOTHING").run(user.id, doc, stamp)
-      : db.prepare("UPDATE workspace SET document = ?, revision = revision + 1, updated_at = ? WHERE user_id = ? AND revision = ?").run(doc, stamp, user.id, data.revision);
-  if (result.changes !== 1) return json({ error: "conflict" }, 409);
+      ? await workspaces.insert(user.id, doc, stamp)
+      : await workspaces.update(user.id, doc, stamp, data.revision);
+  if (!written) return json({ error: "conflict" }, 409);
   return json({ revision: data.revision + 1, updatedAt: stamp });
 }
