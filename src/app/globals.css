@@ -5,6 +5,7 @@
 @import "../styles/pages.css";
 @import "../styles/welcome.css";
 @import "../styles/glass.css";
+@import "../styles/motion.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 

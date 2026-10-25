@@ -1,0 +1,206 @@
+/*
+ * Moasis Motion: how the shell holds still and how things move.
+ *
+ * Patterns follow iOS and the best of what Mobbin and 21st.dev collect: a bar
+ * that stays clear over the large title and frosts once content slides under
+ * it, a tab bar with one glass pill that glides between tabs, controls that
+ * give under your finger and spring back, and sheets that rise rather than
+ * appear. Every movement is short, and anyone who asks for reduced motion gets
+ * instant changes instead.
+ */
+
+:root {
+  --spring-soft: cubic-bezier(0.32, 1.2, 0.5, 1);
+  --spring-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --press: 0.96;
+  --edge-fade: 6rem;
+}
+
+/* ============ Navigation bar ============ */
+.app-topbar {
+  position: sticky; inset-block-start: 0; z-index: var(--layer-sticky);
+  background: transparent; border-block-end: 1px solid transparent;
+  transition: background-color 240ms var(--ease-out), border-color 240ms var(--ease-out), box-shadow 240ms var(--ease-out), -webkit-backdrop-filter 240ms, backdrop-filter 240ms;
+}
+/* Content is under the bar: frost it so nothing reads through. */
+.app-topbar.is-scrolled {
+  background: var(--glass-bar);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border-block-end-color: var(--glass-edge);
+  box-shadow: 0 1px 12px rgb(20 28 36 / 0.04);
+}
+@media (min-width: 64rem) {
+  /* The bar spans the content column only; give it a top margin so it lines up with the floating sidebar. */
+  .app-topbar { inset-block-start: 0.75rem; margin-block-start: 0.75rem; margin-inline-end: 0.75rem; border-radius: 1.25rem; border: 1px solid transparent; }
+  .app-topbar.is-scrolled { border-color: var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-light), var(--glass-shadow); }
+  [dir="rtl"] .app-topbar { margin-inline-end: 0; margin-inline-start: 0.75rem; }
+  .app-sidebar { z-index: calc(var(--layer-sticky) + 1); }
+}
+
+/* The middle of the bar holds the business chip, which gives way to the page title once the large title scrolls off. */
+.topbar-middle { position: relative; flex: 1; min-inline-size: 0; display: grid; align-items: center; block-size: 100%; }
+.topbar-middle > * { grid-area: 1 / 1; }
+.topbar-middle .venture-chip { justify-self: start; max-inline-size: 100%; transition: opacity 200ms var(--ease-out), transform 320ms var(--spring-soft), background-color var(--duration-fast); }
+.topbar-title {
+  margin: 0; justify-self: center; max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--text-body); font-weight: 650; letter-spacing: -0.02em; color: var(--text);
+  opacity: 0; transform: translateY(0.5rem); pointer-events: none;
+  transition: opacity 200ms var(--ease-out), transform 320ms var(--spring-soft);
+}
+:lang(ar) .topbar-title { letter-spacing: normal; }
+.app-topbar.is-condensed .venture-chip { opacity: 0; transform: translateY(-0.5rem); pointer-events: none; }
+.app-topbar.is-condensed .topbar-title { opacity: 1; transform: none; }
+@media (max-width: 47.99rem) {
+  .topbar-back { max-inline-size: 32vw; }
+  .app-topbar.is-condensed .topbar-title { justify-self: center; }
+}
+
+/* ============ Tab bar ============ */
+.mobile-nav { gap: 0; isolation: isolate; transition: transform 320ms var(--spring-soft); }
+.mobile-nav-pill {
+  position: absolute; z-index: -1; inset-block: 0.375rem; inset-inline-start: 0.375rem;
+  inline-size: calc((100% - 0.75rem) / 5); border-radius: var(--radius-pill);
+  background: var(--fill); box-shadow: inset 0 1px 0 var(--glass-light);
+  transform: translateX(calc(var(--tab, 0) * 100%));
+  transition: transform 460ms var(--spring-soft);
+}
+[dir="rtl"] .mobile-nav-pill { transform: translateX(calc(var(--tab, 0) * -100%)); }
+.mobile-tab, .mobile-tab[aria-current="page"] { background: transparent; }
+.mobile-tab svg { transition: scale 320ms var(--spring-snappy); }
+.mobile-tab[aria-current="page"] svg { scale: 1.06; }
+.mobile-tab:active svg { scale: 0.86; }
+
+/* Content fades out as it nears the floating tab bar instead of running hard into it. */
+@media (max-width: 63.99rem) {
+  .app-shell::after {
+    content: ""; position: fixed; inset-inline: 0; inset-block-end: 0; block-size: var(--edge-fade);
+    z-index: calc(var(--layer-navigation) - 1); pointer-events: none;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 82%, transparent) 70%);
+  }
+}
+
+/* ============ Sidebar ============ */
+.side-link, .sub-link { transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out), scale 260ms var(--spring-snappy); }
+.side-link svg { transition: transform 320ms var(--spring-snappy); }
+.side-link:hover svg { transform: scale(1.08); }
+
+/* ============ Segmented control: a thumb that slides ============ */
+.segmented { position: relative; isolation: isolate; }
+.segment { position: relative; z-index: 1; transition: color 200ms var(--ease-out), scale 260ms var(--spring-snappy); }
+.segment-thumb { display: none; }
+.segmented.has-thumb .segment-thumb {
+  display: block; position: absolute; z-index: 0; left: 0; top: 0;
+  inline-size: var(--thumb-w); block-size: var(--thumb-h);
+  transform: translate(var(--thumb-x), var(--thumb-y));
+  border-radius: var(--radius-pill); background: var(--glass-strong);
+  box-shadow: 0 0 0 0.5px var(--glass-edge), 0 3px 8px rgb(20 28 36 / 0.12), inset 0 1px 0 var(--glass-light);
+  transition: transform 420ms var(--spring-soft), inline-size 420ms var(--spring-soft);
+}
+[data-theme="dark"] .segmented.has-thumb .segment-thumb { background: rgb(255 255 255 / 0.16); }
+.segmented.has-thumb .segment[aria-checked="true"] { background: transparent; box-shadow: none; }
+
+/* ============ Press and hover ============ */
+/* `scale` is its own property, so it never fights a transform a component already uses (the wallet cards do). */
+:is(.btn, .icon-btn, .round-btn, .pill-btn, .search-trigger, .topbar-back, .venture-chip, .chip-btn, .choice, .daily-option, .toast-action, .lang-btn) {
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 240ms var(--ease-out), opacity 200ms var(--ease-out), scale 280ms var(--spring-snappy), filter 180ms;
+}
+:is(.btn, .icon-btn, .round-btn, .pill-btn, .search-trigger, .topbar-back, .chip-btn, .toast-action, .lang-btn):active:not(:disabled) { scale: var(--press); transform: none; }
+:is(.choice, .daily-option):active:not(:disabled) { scale: 0.985; }
+.side-link:active, .sub-link:active, .segment:active { scale: 0.97; }
+.btn-primary:hover:not(:disabled) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 10px 26px rgb(20 28 36 / 0.22); }
+.round-btn:hover, .pill-btn:hover { filter: brightness(1.03); box-shadow: inset 0 1px 0 var(--glass-light, transparent), 0 6px 16px rgb(20 28 36 / 0.12); }
+.round-btn:active { transform: none; }
+.quick-action-icon { transition: transform 300ms var(--spring-snappy), box-shadow 240ms var(--ease-out); }
+.quick-action:hover .quick-action-icon { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--glass-light, transparent), 0 8px 20px rgb(20 28 36 / 0.12); }
+.quick-action:active .quick-action-icon { transform: scale(0.9); }
+.wcard { transition: transform 520ms cubic-bezier(0.32, 1.25, 0.5, 1), box-shadow 300ms, filter 300ms, scale 260ms var(--spring-snappy); }
+.wcard:active { scale: 0.985; }
+
+.opp-card, .panel.is-link { transition: transform 300ms var(--spring-soft), box-shadow 300ms var(--ease-out); }
+@media (hover: hover) { .opp-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--glass-light), var(--glass-shadow-lift); } }
+.glance-tile { transition: transform 300ms var(--spring-soft), box-shadow 300ms var(--ease-out), scale 260ms var(--spring-snappy); }
+.glance-tile:active { transform: none; scale: 0.98; }
+
+.grouped-row { transition: background-color 160ms var(--ease-out); }
+.grouped-chevron { transition: transform 300ms var(--spring-snappy), opacity 200ms; }
+.grouped-row:hover .grouped-chevron { transform: translateX(3px); opacity: 1; }
+[dir="rtl"] .grouped-row:hover .grouped-chevron { transform: translateX(-3px); }
+.grouped-icon { transition: transform 300ms var(--spring-snappy); }
+.grouped-row:active .grouped-icon { transform: scale(0.92); }
+
+a.row, button.row { transition: background-color 160ms var(--ease-out); }
+.input { transition: border-color 180ms var(--ease-out), background-color 180ms var(--ease-out), box-shadow 220ms var(--ease-out), outline-color 180ms; }
+.switch { transition: background-color 240ms var(--ease-out); }
+.switch::before, .switch::after { transition: transform 360ms var(--spring-snappy), inline-size 240ms var(--ease-out); }
+details.skill > summary { transition: background-color 160ms var(--ease-out); }
+details[open] > .skill-items { animation: unfold 320ms var(--ease-out) both; }
+@keyframes unfold { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.bar > span, .skill-bar > span, .wcard-progress > span, .progress-fill { transition: inline-size 700ms var(--spring-soft); }
+
+/* ============ Page arrival ============ */
+/* Each route's sections arrive in quick succession, like iOS content settling after a push. */
+@keyframes settle { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.page-root { animation: none; }
+.page-root > * { animation: settle 520ms var(--spring-soft) both; }
+.page-root > :nth-child(2) { animation-delay: 40ms; }
+.page-root > :nth-child(3) { animation-delay: 80ms; }
+.page-root > :nth-child(4) { animation-delay: 120ms; }
+.page-root > :nth-child(5) { animation-delay: 160ms; }
+.page-root > :nth-child(n + 6) { animation-delay: 200ms; }
+.today-stack > *, .hub-stack > * { animation: settle 560ms var(--spring-soft) both; }
+.today-stack > :nth-child(2), .hub-stack > :nth-child(2) { animation-delay: 70ms; }
+.today-stack > :nth-child(3), .hub-stack > :nth-child(3) { animation-delay: 140ms; }
+.today-stack > :nth-child(n + 4), .hub-stack > :nth-child(n + 4) { animation-delay: 200ms; }
+
+/* ============ Sheets, menus, search, toasts ============ */
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scrim-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes sheet-down { from { transform: none; } to { transform: translateY(100%); } }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes pop-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.96); } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } to { opacity: 1; transform: none; } }
+
+.dialog-scrim[data-state="open"] { animation: scrim-in 260ms var(--ease-out); }
+.dialog-scrim[data-state="closed"] { animation: scrim-out 200ms var(--ease-out); }
+.dialog[data-state="open"] { animation: sheet-up 480ms var(--spring-soft); }
+.dialog[data-state="closed"] { animation: sheet-down 240ms var(--ease-out); }
+@media (min-width: 45rem) {
+  .dialog[data-state="open"] { animation: pop-in 380ms var(--spring-soft); }
+  .dialog[data-state="closed"] { animation: pop-out 180ms var(--ease-out); }
+}
+.command[data-state="open"] { animation: pop-in 340ms var(--spring-soft); }
+.command[data-state="closed"] { animation: pop-out 160ms var(--ease-out); }
+.menu { transform-origin: var(--radix-dropdown-menu-content-transform-origin, top right); }
+.menu[data-state="open"] { animation: pop-in 280ms var(--spring-soft); }
+.menu[data-state="closed"] { animation: pop-out 140ms var(--ease-out); }
+.toast { animation: toast-in 420ms var(--spring-soft) both; }
+
+/* ============ Reduced motion ============ */
+@media (prefers-reduced-motion: reduce) {
+  .page-root > *, .today-stack > *, .hub-stack > *, .toast, details[open] > .skill-items,
+  .dialog, .dialog-scrim, .command, .menu { animation: none !important; }
+  .mobile-nav-pill, .segment-thumb, .topbar-title, .venture-chip { transition: none !important; }
+  :is(.btn, .icon-btn, .round-btn, .pill-btn, .wcard, .glance-tile, .side-link, .segment):active { scale: none; }
+}
+
+/* ============ Small flow fixes ============ */
+/* A notice keeps its icon beside the text instead of wrapping it onto its own line. */
+.notice { flex-wrap: nowrap; align-items: flex-start; }
+.notice > svg { flex: none; margin-block-start: 0.125rem; }
+.notice > :is(span, p) { flex: 1; min-inline-size: 0; }
+.notice > .btn { flex: none; align-self: center; }
+@media (max-width: 30rem) { .notice:has(> .btn) { flex-wrap: wrap; } }
+
+@media (min-width: 64rem) {
+  /* Fill the gap above the floating bar so content never peeks over its top edge. */
+  .app-topbar::before {
+    content: ""; position: absolute; inset-inline: -1px; inset-block-end: 100%; block-size: calc(0.75rem + 2px);
+    background: linear-gradient(to bottom, var(--bg) 55%, transparent); opacity: 0; pointer-events: none;
+    transition: opacity 240ms var(--ease-out);
+  }
+  .app-topbar.is-scrolled::before { opacity: 1; }
+}
+
+/* The tucked cards under an open card fade away rather than being cut off by a hard edge. */
+.wstack.is-open { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.25rem), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 1.25rem), transparent); }

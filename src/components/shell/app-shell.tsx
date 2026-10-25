@@ -24,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t, lang } = useI18n();
   const ws = useWorkspace();
   const [search, setSearch] = useState(false);
+  const { scrolled, title } = useScrollHeader(pathname);
 
   // First-run founders see the welcome page; everyone else lands in their workspace.
   useEffect(() => {
@@ -81,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="app-column">
-        <header className="app-topbar glass-bar">
+        <header className={clsx("app-topbar", scrolled && "is-scrolled", title && "is-condensed")}>
           {back ? (
             <Link href={back.href} className="topbar-back">
               <CaretLeft size={20} weight="bold" className="flip-rtl" aria-hidden="true" />
@@ -92,11 +93,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Origin className="h-6 w-6" />
             </Link>
           )}
-          <Link href="/settings#business" className="venture-chip" title={t("Edit business", "تعديل المشروع")}>
-            <span className="venture-chip-icon"><SectorIcon name={sector.icon} size={16} /></span>
-            <bdi className="venture-chip-name">{ws.state.venture.name || t("Your business", "مشروعك")}</bdi>
-            <span className="venture-chip-city">{ws.state.venture.city}</span>
-          </Link>
+          <div className="topbar-middle">
+            <Link href="/settings#business" className="venture-chip" title={t("Edit business", "تعديل المشروع")} tabIndex={title ? -1 : undefined} aria-hidden={title ? true : undefined}>
+              <span className="venture-chip-icon"><SectorIcon name={sector.icon} size={16} /></span>
+              <bdi className="venture-chip-name">{ws.state.venture.name || t("Your business", "مشروعك")}</bdi>
+              <span className="venture-chip-city">{ws.state.venture.city}</span>
+            </Link>
+            <p className="topbar-title" aria-hidden="true"><bdi>{title}</bdi></p>
+          </div>
           <div className="topbar-actions">
             <button type="button" className="search-trigger" onClick={() => setSearch(true)} aria-label={t("Search", "بحث")} aria-keyshortcuts="Control+K Meta+K">
               <MagnifyingGlass size={18} aria-hidden="true" />
@@ -122,6 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="mobile-nav glass" aria-label={t("Main", "الرئيسية")}>
+        {pathname !== "/settings" && <span className="mobile-nav-pill" aria-hidden="true" style={{ "--tab": spaces.indexOf(space) } as React.CSSProperties} />}
         {spaces.map((sp) => {
           const active = sp.id === space.id && pathname !== "/settings";
           const I = sp.icon;
@@ -158,6 +163,33 @@ function SubLink({ item, label, active }: { item: NavItem; label: string; active
 }
 
 const noop = () => () => {};
+
+/**
+ * The bar is clear while the page's large title is in view. Once content
+ * scrolls beneath it, the bar frosts over so nothing reads through it, and
+ * when the large title itself has gone the bar carries the page's name, the
+ * way iOS navigation bars do.
+ */
+function useScrollHeader(pathname: string) {
+  const [scrolled, setScrolled] = useState(false);
+  const [title, setTitle] = useState("");
+  useEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const h1 = document.querySelector<HTMLElement>("#main h1");
+      const bar = document.querySelector<HTMLElement>(".app-topbar")?.getBoundingClientRect().bottom ?? 56;
+      setScrolled(window.scrollY > 4);
+      setTitle(h1 && h1.getBoundingClientRect().bottom < bar ? (h1.textContent ?? "").trim() : "");
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(measure); };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (frame) cancelAnimationFrame(frame); };
+  }, [pathname]);
+  return { scrolled, title };
+}
 
 function LoadingScreen() {
   return (
