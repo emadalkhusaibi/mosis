@@ -13,6 +13,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Field, TextArea } from "@/components/ui/field";
 import { sectorOf } from "@/content/sectors";
 import { forSector, isOpen, kindNames, matches, modeNames, opportunities, type Opportunity, type OpportunityKind } from "@/content/opportunities";
+import { kindOrder } from "@/domain/profile";
 import { applicationText, recordSent, toggleSaved } from "@/domain/connect";
 
 type Filter = "all" | OpportunityKind;
@@ -27,7 +28,10 @@ export default function OpportunitiesPage() {
   const [open, setOpen] = useState<Opportunity | null>(null);
   const sector = state.venture.sector;
   const sectorName = state.venture.sector === "other" ? state.venture.other || t("your business", "مشروعك") : p(sectorOf(sector).name);
-  const list = forSector(opportunities, sector).filter((o) => (kind === "all" || o.kind === kind) && (scope === "all" || matches(o, sector)));
+  // Fits first, then the kind that suits the founder's experience (internships for a first business, 1:1s for seasoned founders).
+  const order = kindOrder(state);
+  const rank = (o: Opportunity) => (matches(o, sector) ? 0 : 10) + order.indexOf(o.kind);
+  const list = forSector(opportunities, sector).filter((o) => (kind === "all" || o.kind === kind) && (scope === "all" || matches(o, sector))).sort((a, b) => rank(a) - rank(b));
   const sent = state.connect?.sent ?? [];
   const hasExamples = opportunities.some((o) => o.example);
 

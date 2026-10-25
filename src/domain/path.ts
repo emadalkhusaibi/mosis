@@ -12,7 +12,7 @@ import type { Need, Stage, State } from "./state";
  * yet done, so two founders with different businesses or needs see different
  * work first.
  */
-export type StepId = "idea" | "numbers" | "test" | "mentor" | "reserve" | "practice" | "record" | "launch";
+export type StepId = "idea" | "numbers" | "test" | "mentor" | "reserve" | "practice" | "record" | "launch" | "basics";
 export type PathStep = { id: StepId; href: string; title: Words; sub: Words; done: boolean; sectionId?: string };
 
 /** Founders who set up before we asked get a need inferred from their stage. */
@@ -106,10 +106,22 @@ export function pathFor(s: State): PathStep[] {
     launch: {
       id: "launch", href: "/launch", done: (s.launch?.length ?? 0) >= 3,
       title: w("Work through the launch steps for Oman", "أنجز خطوات الانطلاق في عُمان"),
-      sub: [`Registration and premises for a ${name[0].toLowerCase()}`, `التسجيل والموقع لـ${name[1]}`],
+      sub: s.venture.profile?.channel === "online" || s.venture.profile?.channel === "home"
+        ? [`Registration for a ${name[0].toLowerCase()} you can run without a shopfront`, `التسجيل لـ${name[1]} يمكن إدارته دون محل`]
+        : [`Registration and premises for a ${name[0].toLowerCase()}`, `التسجيل والموقع لـ${name[1]}`],
+    },
+    basics: {
+      id: "basics", href: "/learn/margin", done: s.learning.completed.includes("margin"),
+      title: w("Learn price, margin and break-even", "تعلّم السعر والهامش ونقطة التعادل"),
+      sub: [`Ten minutes, with ${name[0].toLowerCase()} numbers`, `عشر دقائق، بأرقام ${name[1]}`],
     },
   };
-  return order[needOf(s)].map((id) => steps[id]);
+  let ids = order[needOf(s)];
+  const experience = s.venture.profile?.experience;
+  // A first business gets the money basics early; someone who has run one skips the opening chapters.
+  if (experience === "first" && !ids.includes("basics")) ids = [ids[0], "basics", ...ids.slice(1, 3)];
+  if (experience === "experienced" && ids[0] === "idea" && needOf(s) !== "plan") ids = [...ids.slice(1), ids.includes("practice") ? "record" : "practice"];
+  return ids.map((id) => steps[id]);
 }
 
 /** The first step on the path not yet done, or null when the path is complete. */

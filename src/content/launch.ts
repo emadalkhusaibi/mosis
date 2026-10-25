@@ -65,7 +65,8 @@ export const launchSteps: LaunchStep[] = [
  * What the premises step means for one kind of business. Kept to what to check
  * and with whom, never a promise about the outcome.
  */
-export function premisesNote(sector: string): Words | null {
+export function premisesNote(sector: string, channel?: string): Words | null {
+  if (channel === "online" || channel === "home") return w("You said customers won't come to a shop, so you may not need one. Check whether your activity can be registered from home or a shared office before you sign a lease.", "ذكرت أن العملاء لن يأتوا إلى محل، فقد لا تحتاج إليه. تحقق إن كان نشاطك يمكن تسجيله من المنزل أو مكتب مشترك قبل توقيع أي إيجار.");
   switch (sector) {
     case "cafe":
     case "restaurant":

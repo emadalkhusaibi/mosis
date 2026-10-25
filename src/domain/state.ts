@@ -18,6 +18,18 @@ export type Stage = (typeof stages)[number];
 /** What the founder most needs from Moasis right now. It reorders their path. */
 export const needs = ["demand", "money", "plan", "people", "launch"] as const;
 export type Need = (typeof needs)[number];
+/** What the founder told us about themselves at the start; each answer changes what Moasis shows them. */
+export const experiences = ["first", "some", "experienced"] as const;
+export const channels = ["premises", "online", "home", "mixed"] as const;
+export const times = ["hours", "parttime", "fulltime"] as const;
+export const worries = ["money", "customers", "competition", "paperwork", "alone"] as const;
+export const profileSchema = z.object({
+  experience: z.enum(experiences).optional(),
+  channel: z.enum(channels).optional(),
+  time: z.enum(times).optional(),
+  worry: z.enum(worries).optional(),
+});
+export type Profile = z.infer<typeof profileSchema>;
 
 export const financeSchema = z.object({
   /** Price per unit, baisa. */
@@ -124,6 +136,7 @@ export const stateSchema = z
       city: z.string().max(80),
       stage: z.enum(stages),
       need: z.enum(needs).optional(),
+      profile: profileSchema.optional(),
       idea: z.string().max(600),
       capital: baisa,
       started: z.boolean(),

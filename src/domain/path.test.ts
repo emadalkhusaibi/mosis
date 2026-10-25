@@ -50,4 +50,12 @@ describe("founder path", () => {
     expect(pathFor(s)[1].done).toBe(true);
     expect(nextStep(s)?.id).toBe("practice");
   });
+
+  it("adapts to experience", () => {
+    const first = pathFor(venture("cafe", { need: "demand", profile: { experience: "first" } })).map((x) => x.id);
+    expect(first).toEqual(["idea", "basics", "test", "numbers"]);
+    const seasoned = pathFor(venture("cafe", { need: "demand", profile: { experience: "experienced" } })).map((x) => x.id);
+    expect(seasoned[0]).toBe("test");
+    expect(seasoned).not.toContain("idea");
+  });
 });

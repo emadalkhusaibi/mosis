@@ -16,6 +16,7 @@ import { evidenceSummary, weekStart } from "@/domain/evidence";
 import { dailyFor, localDay } from "@/content/daily";
 import { readiness } from "@/domain/readiness";
 import { needNames, needOf, nextStep, pathFor, type StepId } from "@/domain/path";
+import { paceFor, profileOf, worryHelp, worryOptions } from "@/domain/profile";
 
 type T = (en: string, ar: string) => string;
 
@@ -47,6 +48,7 @@ export default function TodayPage() {
       <div className="today-stack">
         <NextDecision />
         <YourPath />
+        <WorryCard />
         <AtAGlance />
         <DailyDecisionCard />
       </div>
@@ -73,6 +75,7 @@ function NextDecision() {
     practice: t("Make the call", "اتخذ القرار"),
     record: t("Open your record", "افتح سجلّك"),
     launch: t("Open launch steps", "افتح خطوات الانطلاق"),
+    basics: t("Start lesson", "ابدأ الدرس"),
   };
 
   const copy = (() => {
@@ -137,6 +140,23 @@ function NextDecision() {
 
 const noop = () => () => {};
 
+/** Help aimed at what the founder said worries them most. */
+function WorryCard() {
+  const { t, p } = useI18n();
+  const { state: s } = useWorkspace();
+  const worry = profileOf(s).worry;
+  if (!worry) return null;
+  const help = worryHelp[worry];
+  return (
+    <Panel className="worry" aria-labelledby="worry-title">
+      <p className="page-kicker">{t("You said you're most worried about", "قلت إن أكثر ما يقلقك")}</p>
+      <h2 className="worry-title" id="worry-title">{p(worryOptions[worry].title)}</h2>
+      <p className="worry-why">{p(help.why)}</p>
+      <Button href={help.href} variant="secondary" trailing={<ArrowRight size={16} className="flip-rtl" />}>{p(help.cta)}</Button>
+    </Panel>
+  );
+}
+
 /** Four steps picked for this founder's need and business, with what's done ticked off. */
 function YourPath() {
   const { t, p } = useI18n();
@@ -170,7 +190,7 @@ function YourPath() {
           </li>
         ))}
       </ol>
-      <p className="path-foot small muted">{t(`${done} of ${steps.length} done`, `أُنجز ${done} من ${steps.length}`)}</p>
+      <p className="path-foot small muted">{t(`${done} of ${steps.length} done`, `أُنجز ${done} من ${steps.length}`)}{profileOf(s).time && <> · {p(paceFor[profileOf(s).time!])}</>}</p>
     </section>
   );
 }

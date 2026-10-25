@@ -4,21 +4,30 @@ import { startVenture } from "./helpers";
 const availableText = (page: import("@playwright/test").Page) => page.locator(".wcard-capital .wcard-amount .money-value");
 
 test.describe("founder journey (English)", () => {
-  test("new visitors land on the welcome page", async ({ page }) => {
+  test("new visitors start with the questions that shape their workspace", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveURL(/\/welcome$/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Practise the business");
+    await expect(page).toHaveURL(/\/setup$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Let's shape Moasis around you.");
+    await expect(page.getByRole("link", { name: "What is Moasis?" })).toHaveAttribute("href", "/welcome");
   });
 
   test("setup keeps its draft through a reload and states reserve coverage honestly", async ({ page }) => {
     await page.goto("/setup");
+    await page.getByRole("button", { name: "Start" }).click();
     await page.getByLabel("Your name").fill("Test Founder");
-    await page.getByLabel("Business name").fill("Draft Café");
     await page.getByRole("button", { name: "Continue" }).click();
     await page.reload();
-    await expect(page.getByText("Step 2 of 5")).toBeVisible();
+    await expect(page.getByText("Question 2 of 10")).toBeVisible();
     await page.getByRole("radio", { name: /Café/ }).click();
     await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("radio", { name: /Testing with customers/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("What do you need most right now?");
+    await page.getByRole("button", { name: "Continue" }).click();
+    for (let i = 0; i < 4; i++) {
+      await expect(page.getByText(`Question ${i + 5} of 10`)).toBeVisible();
+      await page.getByRole("button", { name: "Skip" }).click();
+    }
+    await page.getByLabel("Business name").fill("Draft Café");
     await page.getByRole("button", { name: "Continue" }).click();
     // 3 months of café fixed costs (4,500) is more than 30% of 10,000, so it says so.
     await expect(page.getByText(/more than 30% of your capital/)).toBeVisible();
