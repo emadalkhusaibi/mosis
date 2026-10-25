@@ -5,13 +5,16 @@ import clsx from "clsx";
 import { useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { PageHeader, Panel, PanelHeader } from "@/components/ui/panel";
-import { launchSteps } from "@/content/launch";
+import { launchSteps, premisesNote } from "@/content/launch";
+import { sectorOf } from "@/content/sectors";
 
 /** From plan to a registered business: the real-world steps, ticked off as they happen. */
 export default function LaunchPage() {
   const { t, p } = useI18n();
   const { state, update } = useWorkspace();
   const done = new Set(state.launch ?? []);
+  const note = premisesNote(state.venture.sector);
+  const sectorName = state.venture.sector === "other" ? state.venture.other : p(sectorOf(state.venture.sector).name);
   const toggle = (id: string) =>
     update((s) => {
       const set = new Set(s.launch ?? []);
@@ -38,6 +41,7 @@ export default function LaunchPage() {
                 <div className="launch-step-main">
                   <label htmlFor={`launch-${s.id}`} className="launch-step-title"><span className="launch-step-n num" aria-hidden="true">{i + 1}</span>{p(s.title)}</label>
                   <p className="launch-step-body">{p(s.body)}</p>
+                  {s.id === "premises" && note && <p className="launch-step-note"><strong>{t(`For a ${sectorName.toLowerCase()}:`, `في ${sectorName}:`)}</strong> {p(note)}</p>}
                   <p className="launch-step-meta">
                     <span className="chip">{p(s.when)}</span>
                     {s.source && <a className="link small" href={s.source.url} target="_blank" rel="noreferrer">{s.source.label} <ArrowSquareOut size={12} className="inline-icon" aria-hidden="true" /></a>}

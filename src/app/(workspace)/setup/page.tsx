@@ -12,7 +12,8 @@ import { Field, Input, MoneyInput, TextArea } from "@/components/ui/field";
 import { SectorIcon } from "@/components/ui/icons";
 import { Money } from "@/components/ui/money";
 import { LanguageToggle } from "@/components/shell/app-shell";
-import { newId, type Stage, type State } from "@/domain/state";
+import { needs, newId, type Need, type Stage, type State } from "@/domain/state";
+import { needDescriptions, needFromStage, needNames } from "@/domain/path";
 import { formatCoverage, suggestReserve, RESERVE_TARGET_MONTHS } from "@/domain/reserve";
 import { moneyErrorText, toBaisa, type Baisa, type MoneyError } from "@/lib/money";
 
@@ -20,7 +21,7 @@ const STEPS = 5;
 const DRAFT_KEY = "moasis-setup-draft";
 const capitalPresets = [5_000, 10_000, 25_000, 50_000].map(toBaisa);
 
-type Draft = { step: number; founder: string; name: string; sector: string; other: string; stage: Stage; idea: string; city: string; capital: Baisa | null; protect: boolean };
+type Draft = { step: number; founder: string; name: string; sector: string; other: string; stage: Stage; need?: Need; idea: string; city: string; capital: Baisa | null; protect: boolean };
 
 export default function SetupPage() {
   const ws = useWorkspace();
@@ -47,7 +48,7 @@ function SetupForm() {
 
   // A new setup survives Back and refresh; editing always starts from the saved profile.
   const [d, setD] = useState<Draft>(() => ({
-    step: 0, founder: v.founder || ws.user?.name || "", name: v.name, sector: v.sector, other: v.other, stage: v.stage, idea: v.idea, city: v.city || "Muscat", capital: v.capital, protect: true,
+    step: 0, founder: v.founder || ws.user?.name || "", name: v.name, sector: v.sector, other: v.other, stage: v.stage, need: v.need, idea: v.idea, city: v.city || "Muscat", capital: v.capital, protect: true,
     ...(editing ? null : readDraft()),
   }));
   const [capitalErr, setCapitalErr] = useState<MoneyError | null>(null);
@@ -95,8 +96,9 @@ function SetupForm() {
     if (finishing.current) return; // double-clicks never add capital twice
     finishing.current = true;
     const cap = d.capital ?? toBaisa(10_000);
+    const need = d.need ?? needFromStage[d.stage];
     const ok = ws.update((cur): State => {
-      const venture = { ...cur.venture, founder: d.founder.trim(), name: d.name.trim(), sector: d.sector, other: d.other.trim(), stage: d.stage, idea: d.idea.trim(), city: d.city.trim() };
+      const venture = { ...cur.venture, founder: d.founder.trim(), name: d.name.trim(), sector: d.sector, other: d.other.trim(), stage: d.stage, need, idea: d.idea.trim(), city: d.city.trim() };
       // Editing the profile never rewrites money, history or assumptions.
       if (editing) return { ...cur, venture: { ...cur.venture, ...venture } };
       // Idempotent: a workspace that has already started is left as it is.
@@ -177,6 +179,9 @@ function SetupForm() {
           <div className="form-stack">
             <RadioCards label={t("Stage", "المرحلة")} className="choice-grid choice-grid-2" value={d.stage} onChange={(stage) => set({ stage: stage as Stage })}
               options={stageOptions.map((o) => ({ value: o.id, node: <><span className="choice-title">{o.title}</span><span className="choice-sub">{o.sub}</span></> }))} />
+            <p className="field-label" aria-hidden="true">{t("What do you need most right now?", "ما الذي تحتاجه أكثر الآن؟")}</p>
+            <RadioCards label={t("What do you need most right now?", "ما الذي تحتاجه أكثر الآن؟")} className="choice-grid choice-grid-2" value={d.need ?? needFromStage[d.stage]} onChange={(need) => set({ need: need as Need })}
+              options={needs.map((n) => ({ value: n, node: <><span className="choice-title">{p(needNames[n])}</span><span className="choice-sub">{p(needDescriptions[n])}</span></> }))} />
             <Field label={t("Your idea in one sentence", "فكرتك في جملة واحدة")} optional>
               {(f) => <TextArea id={f.id} value={d.idea} onChange={(e) => set({ idea: e.target.value })} maxLength={600} rows={3} placeholder={t("Who it's for, what you'll offer, and why it matters.", "لمن هو، وماذا ستقدّم، ولماذا يهم.")} />}
             </Field>
@@ -223,7 +228,7 @@ function SetupForm() {
           <div className="review panel">
             <ReviewRow label={t("Founder and business", "المؤسس والمشروع")} onEdit={() => go(0)}><bdi>{d.founder}</bdi> · <bdi>{d.name}</bdi></ReviewRow>
             <ReviewRow label={t("Business type", "نوع المشروع")} onEdit={() => go(1)}>{d.sector === "other" ? d.other : p(s.name)}</ReviewRow>
-            <ReviewRow label={t("Stage and place", "المرحلة والمكان")} onEdit={() => go(2)}>{stageOptions.find((o) => o.id === d.stage)?.title} · <bdi>{d.city}</bdi></ReviewRow>
+            <ReviewRow label={t("Stage and place", "المرحلة والمكان")} onEdit={() => go(2)}>{stageOptions.find((o) => o.id === d.stage)?.title} · {p(needNames[d.need ?? needFromStage[d.stage]])} · <bdi>{d.city}</bdi></ReviewRow>
             <ReviewRow label={t("Practice capital", "رأس المال التدريبي")} onEdit={() => go(3)}><Money value={editing ? v.capital : d.capital ?? 0} /></ReviewRow>
             {!editing && <ReviewRow label={t("Protected reserve", "الاحتياطي المحمي")} onEdit={() => go(3)}>{d.protect ? <><Money value={reserve.funded} /> · {formatCoverage(reserve.coverage, t, number)}</> : t("None", "لا يوجد")}</ReviewRow>}
             {!editing && <ReviewRow label={t("First field test", "أول اختبار ميداني")}>{p(s.test)}</ReviewRow>}

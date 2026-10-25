@@ -60,3 +60,37 @@ export const launchSteps: LaunchStep[] = [
     when: w("Before asking for money", "قبل طلب التمويل"),
   },
 ];
+
+/**
+ * What the premises step means for one kind of business. Kept to what to check
+ * and with whom, never a promise about the outcome.
+ */
+export function premisesNote(sector: string): Words | null {
+  switch (sector) {
+    case "cafe":
+    case "restaurant":
+      return w("Food premises need the municipality's health licence, and staff who handle food usually need health certificates. Check both before you fit out the kitchen.", "تحتاج منشآت الأغذية ترخيصاً صحياً من البلدية، ويحتاج العاملون في تداول الأغذية عادةً إلى شهادات صحية. تحقق من الأمرين قبل تجهيز المطبخ.");
+    case "ecommerce":
+    case "tech":
+    case "services":
+    case "studio":
+      return w("You may not need a shopfront at all. Check whether your activity can be registered from home or a shared office before you sign a lease.", "قد لا تحتاج محلاً على الإطلاق. تحقق إن كان نشاطك يمكن تسجيله من المنزل أو مكتب مشترك قبل توقيع أي إيجار.");
+    case "retail":
+    case "salon":
+    case "fitness":
+    case "automotive":
+      return w("Customers come to you, so the location, the activity and any shop sign need the municipality's approval. Ask before you commit to the unit.", "الزبائن يأتون إليك، لذا يحتاج الموقع والنشاط واللوحة الإعلانية إلى موافقة البلدية. اسأل قبل الالتزام بالمحل.");
+    case "tourism":
+      return w("Tourism activities can need a licence from the Ministry of Heritage and Tourism as well as the commercial registration. Check which applies to yours.", "قد تحتاج الأنشطة السياحية ترخيصاً من وزارة التراث والسياحة إضافة إلى السجل التجاري. تحقق مما ينطبق على نشاطك.");
+    case "education":
+      return w("Training centres and nurseries need approval from the ministry that covers the activity before they open. Check which one is yours on Invest Easy.", "تحتاج مراكز التدريب ودور الحضانة موافقة الوزارة المختصة بالنشاط قبل الافتتاح. تحقق من الجهة المختصة عبر استثمر بسهولة.");
+    case "manufacturing":
+      return w("Production can need an industrial location and an environmental permit. Check the zoning before you lease a workshop.", "قد يحتاج الإنتاج موقعاً صناعياً وتصريحاً بيئياً. تحقق من التصنيف قبل استئجار ورشة.");
+    case "logistics":
+      return w("Vehicles used for business need the right registration and permits for their type. Check before you buy or lease one.", "تحتاج المركبات المستخدمة تجارياً تسجيلاً وتصاريح تناسب نوعها. تحقق قبل شرائها أو استئجارها.");
+    case "events":
+      return w("Each event venue may need its own permit from the municipality. Check the rules for the venues you plan to use.", "قد يحتاج كل موقع فعالية تصريحاً خاصاً من البلدية. تحقق من القواعد للمواقع التي تخطط لاستخدامها.");
+    default:
+      return null;
+  }
+}

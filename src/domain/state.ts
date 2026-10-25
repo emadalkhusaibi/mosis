@@ -15,6 +15,9 @@ export type EntryCategory = (typeof entryCategories)[number];
 
 export const stages = ["exploring", "validating", "ready", "operating"] as const;
 export type Stage = (typeof stages)[number];
+/** What the founder most needs from Moasis right now. It reorders their path. */
+export const needs = ["demand", "money", "plan", "people", "launch"] as const;
+export type Need = (typeof needs)[number];
 
 export const financeSchema = z.object({
   /** Price per unit, baisa. */
@@ -120,6 +123,7 @@ export const stateSchema = z
       other: z.string().max(120),
       city: z.string().max(80),
       stage: z.enum(stages),
+      need: z.enum(needs).optional(),
       idea: z.string().max(600),
       capital: baisa,
       started: z.boolean(),

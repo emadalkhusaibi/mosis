@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
-import { ArrowRight, Certificate, Notebook, Wallet } from "@phosphor-icons/react";
+import { ArrowRight, CaretRight, Certificate, CheckCircle, Notebook, Wallet } from "@phosphor-icons/react";
+import clsx from "clsx";
 import { arMinutes, useI18n } from "@/lib/i18n";
 import { useWorkspace } from "@/state/workspace";
 import { useContent } from "@/state/content";
@@ -14,6 +15,7 @@ import { nextMove, planProgress } from "@/domain/progress";
 import { evidenceSummary, weekStart } from "@/domain/evidence";
 import { dailyFor, localDay } from "@/content/daily";
 import { readiness } from "@/domain/readiness";
+import { needNames, needOf, nextStep, pathFor, type StepId } from "@/domain/path";
 
 type T = (en: string, ar: string) => string;
 
@@ -44,6 +46,7 @@ export default function TodayPage() {
 
       <div className="today-stack">
         <NextDecision />
+        <YourPath />
         <AtAGlance />
         <DailyDecisionCard />
       </div>
@@ -56,11 +59,24 @@ function NextDecision() {
   const { sections, lessons, scenarios } = useContent();
   const { t, p } = useI18n();
   const { state: s } = useWorkspace();
-  const move = nextMove(s);
   const plan = planProgress(s);
   const sector = sectorOf(s.venture.sector);
+  // The founder's own path leads; once it's walked, the general engine takes over.
+  const step = nextStep(s);
+  const move = step?.id === "idea" ? { kind: "plan" as const, href: step.href, sectionId: step.sectionId } : step ? { kind: "step" as const, href: step.href } : nextMove(s);
+  const stepCta: Record<StepId, string> = {
+    idea: t("Continue writing", "تابع الكتابة"),
+    numbers: t("Open forecast", "افتح التوقعات"),
+    test: t("Plan the test", "خطّط للاختبار"),
+    mentor: t("See opportunities", "اعرض الفرص"),
+    reserve: t("Open wallet", "افتح المحفظة"),
+    practice: t("Make the call", "اتخذ القرار"),
+    record: t("Open your record", "افتح سجلّك"),
+    launch: t("Open launch steps", "افتح خطوات الانطلاق"),
+  };
 
   const copy = (() => {
+    if (move.kind === "step" && step) return { title: p(step.title), reason: p(step.sub), cta: stepCta[step.id] };
     switch (move.kind) {
       case "plan": {
         const i = sections.findIndex((x) => x.id === move.sectionId);
@@ -107,7 +123,7 @@ function NextDecision() {
 
   return (
     <Panel className="next-decision glass-hero" aria-labelledby="next-title">
-      <p className="page-kicker" id="next-title">{t("Your next decision", "قرارك التالي")}</p>
+      <p className="page-kicker" id="next-title">{t("Your next decision", "قرارك التالي")}{step && <> · {p(needNames[needOf(s)])}</>}</p>
       <h2 className="next-title">{copy.title}</h2>
       <p className="next-reason">{copy.reason}</p>
       <div className="cluster next-actions">
@@ -120,6 +136,44 @@ function NextDecision() {
 }
 
 const noop = () => () => {};
+
+/** Four steps picked for this founder's need and business, with what's done ticked off. */
+function YourPath() {
+  const { t, p } = useI18n();
+  const { state: s } = useWorkspace();
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const steps = pathFor(s);
+  const current = steps.find((x) => !x.done);
+  const done = steps.filter((x) => x.done).length;
+  const sectorName = s.venture.sector === "other" ? s.venture.other : p(sectorOf(s.venture.sector).name);
+  return (
+    <section className="path" aria-labelledby="path-title">
+      <div className="path-head">
+        <div className="min-w-0">
+          <h2 id="path-title" className="path-title">{t("Your path", "مسارك")}</h2>
+          <p className="path-sub">{p(needNames[needOf(s)])} · <bdi>{sectorName}</bdi></p>
+        </div>
+        <Link href="/setup" className="link-quiet small">{t("Change", "غيّر")}</Link>
+      </div>
+      <ol className="grouped glass path-list">
+        {steps.map((x, i) => (
+          <li key={x.id}>
+            <Link href={x.href} className={clsx("grouped-row path-row", x.done && "is-done", mounted && x === current && "is-current")}>
+              <span className="path-mark" aria-hidden="true">{x.done ? <CheckCircle size={26} weight="fill" /> : <span className="path-num">{i + 1}</span>}</span>
+              <span className="grouped-main">
+                <span className="grouped-title">{p(x.title)}</span>
+                <span className="grouped-sub">{p(x.sub)}</span>
+              </span>
+              <span className="sr-only">{x.done ? t("Done", "منجز") : t("Not done yet", "لم يُنجز بعد")}</span>
+              <CaretRight size={16} weight="bold" className="grouped-chevron flip-rtl" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <p className="path-foot small muted">{t(`${done} of ${steps.length} done`, `أُنجز ${done} من ${steps.length}`)}</p>
+    </section>
+  );
+}
 
 /** One small decision a day. It moves no money; it builds the habit of weighing trade-offs. */
 function DailyDecisionCard() {
